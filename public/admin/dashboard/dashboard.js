@@ -1,99 +1,70 @@
-// public/admin/dashboard/dashboard.js
-
-import { auth, db } from "/js/firebase/app.js";
-
+import { db } from "/js/firebase/app.js";
 import {
   collection,
-  getDocs,
+  getCountFromServer,
   query,
   where,
   orderBy,
-  limit
+  limit,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-import { onAuthStateChanged } from
-  "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+/* ---------- COUNTS ---------- */
 
-// DOM Elements
-const totalDealersEl = document.getElementById("totalDealers");
-const totalBatteriesEl = document.getElementById("totalBatteries");
-const activeWarrantyEl = document.getElementById("activeWarranties");
-const pendingDealersEl = document.getElementById("pendingDealers");
-const totalClaimsEl = document.getElementById("totalClaims");
-const activityListEl = document.getElementById("activityList");
-
-// 🔐 Auth + Role Check
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "/login.html";
-    return;
-  }
-
-  const userSnap = await getDocs(
-    query(collection(db, "users"), where("uid", "==", user.uid))
-  );
-
-  if (userSnap.empty) {
-    alert("User record not found");
-    return;
-  }
-
-  const userData = userSnap.docs[0].data();
-  if (userData.role !== "ADMIN") {
-    alert("Unauthorized access");
-    window.location.href = "/";
-    return;
-  }
-
-  loadDashboard();
-});
-
-// 📊 Load Dashboard Data
-async function loadDashboard() {
+async function loadCounts() {
 
   // Dealers
-  const dealersSnap = await getDocs(
+  const dealersSnap = await getCountFromServer(
     query(collection(db, "users"), where("role", "==", "DEALER"))
   );
-  totalDealersEl.innerText = dealersSnap.size;
+  document.getElementById("totalDealers").innerText = dealersSnap.data().count;
 
-  // Pending Dealer Requests
-  const pendingSnap = await getDocs(
-    query(collection(db, "dealer_requests"), where("status", "==", "PENDING"))
+  // Pending Dealers
+  const pendingSnap = await getCountFromServer(
+    query(collection(db, "dealerRequests"), where("status", "==", "PENDING"))
   );
-  pendingDealersEl.innerText = pendingSnap.size;
+  document.getElementById("pendingDealers").innerText = pendingSnap.data().count;
 
   // Batteries
-  const batteriesSnap = await getDocs(collection(db, "batteries"));
-  totalBatteriesEl.innerText = batteriesSnap.size;
+  const batteriesSnap = await getCountFromServer(
+    collection(db, "batteries")
+  );
+  document.getElementById("totalBatteries").innerText = batteriesSnap.data().count;
 
-  // Active Warranties
-  const activeSnap = await getDocs(
+  // Active Warranty
+  const activeSnap = await getCountFromServer(
     query(collection(db, "batteries"), where("status", "==", "ACTIVE"))
   );
-  activeWarrantyEl.innerText = activeSnap.size;
+  document.getElementById("activeWarranties").innerText = activeSnap.data().count;
 
-  // Warranty Claims
-  const claimsSnap = await getDocs(collection(db, "warranty_claims"));
-  totalClaimsEl.innerText = claimsSnap.size;
+  // Claims
+  const claimsSnap = await getCountFromServer(
+    collection(db, "claims")
+  );
+  document.getElementById("totalClaims").innerText = claimsSnap.data().count;
+}
 
-  // Recent Activity
-  const activitySnap = await getDocs(
-    query(
-      collection(db, "activity_logs"),
-      orderBy("timestamp", "desc"),
-      limit(5)
-    )
+/* ---------- ACTIVITY LOG ---------- */
+
+async function loadActivity() {
+  const list = document.getElementById("activityList");
+  list.innerHTML = "";
+
+  const q = query(
+    collection(db, "activityLogs"),
+    orderBy("createdAt", "desc"),
+    limit(8)
   );
 
-  activityListEl.innerHTML = "";
-  activitySnap.forEach(doc => {
-    const d = doc.data();
-    activityListEl.innerHTML += `
-      <li>
-        <strong>${d.action}</strong><br>
-        <small>${new Date(d.timestamp).toLocaleString()}</small>
-      </li>
-    `;
+  const snap = await getDocs(q);
+  snap.forEach(doc => {
+    const li = document.createElement("li");
+    li.innerText = doc.data().message;
+    list.appendChild(li);
   });
-                                              }
+}
+
+/* ---------- INIT ---------- */
+
+loadCounts();
+loadActivity();
