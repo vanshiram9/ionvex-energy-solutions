@@ -39,6 +39,58 @@ async function loadDealerRequests() {
     table.appendChild(tr);
   });
 }
+// ===============================
+// DEALER DETAIL PAGE LOGIC
+// ===============================
+import { doc, getDoc, updateDoc, collection, query, where, getDocs } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { db } from "/js/firebase/app.js";
+
+const params = new URLSearchParams(window.location.search);
+const dealerId = params.get("id");
+
+async function loadDealerDetail() {
+  if (!dealerId) return;
+
+  const ref = doc(db, "dealer_requests", dealerId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+
+  const d = snap.data();
+
+  dName.innerText = d.name;
+  dEmail.innerText = d.email;
+  dPhone.innerText = d.phone;
+  dCity.innerText = d.city;
+  dStatus.innerText = d.status;
+
+  // FUTURE SAFE STATS
+  statBatteries.innerText = d.totalBatteries || 0;
+  statWarranty.innerText = d.activeWarranty || 0;
+  statClaims.innerText = d.totalClaims || 0;
+
+  // BUTTON STATE
+  blockBtn.style.display = d.status === "BLOCKED" ? "none" : "inline-block";
+  unblockBtn.style.display = d.status === "BLOCKED" ? "inline-block" : "none";
+}
+
+blockBtn?.addEventListener("click", async () => {
+  await updateDoc(doc(db, "dealer_requests", dealerId), {
+    status: "BLOCKED"
+  });
+  alert("Dealer blocked");
+  location.reload();
+});
+
+unblockBtn?.addEventListener("click", async () => {
+  await updateDoc(doc(db, "dealer_requests", dealerId), {
+    status: "APPROVED"
+  });
+  alert("Dealer unblocked");
+  location.reload();
+});
+
+loadDealerDetail();
 
 // 🔹 Load approved dealers
 async function loadApprovedDealers() {
