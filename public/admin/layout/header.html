@@ -1,0 +1,21 @@
+<header class="admin-header">
+  <div class="left">
+    <img src="/assets/images/logo.png" class="logo">
+    <span>Ionvex Admin</span>
+  </div>
+
+  <div class="right">
+    <span id="adminName"></span>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<script type="module">
+import { auth } from "/js/firebase/app.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+document.getElementById("logoutBtn").onclick = async () => {
+  await signOut(auth);
+  location.href = "/public/admin/auth/login.html";
+};
+</script>
