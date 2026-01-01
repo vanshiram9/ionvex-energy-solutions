@@ -1,40 +1,64 @@
+// public/admin/dealers/dealers.js
+
 import { db } from "/js/firebase/app.js";
 import {
   collection,
-  query,
-  where,
-  getDocs
+  getDocs,
+  updateDoc,
+  doc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const table = document.getElementById("dealerTable");
+const table = document.getElementById("dealerRequestTable");
 
-async function loadDealers() {
-  const q = query(
-    collection(db, "users"),
-    where("role", "==", "DEALER")
-  );
-
-  const snapshot = await getDocs(q);
+// 🔹 Load pending dealer requests
+async function loadDealerRequests() {
   table.innerHTML = "";
 
-  snapshot.forEach(docSnap => {
+  const snap = await getDocs(collection(db, "dealer_requests"));
+
+  snap.forEach(docSnap => {
     const d = docSnap.data();
 
+    if (d.status !== "PENDING") return;
+
     const tr = document.createElement("tr");
+
     tr.innerHTML = `
       <td>${d.name}</td>
-      <td>${d.phone}</td>
       <td>${d.email}</td>
+      <td>${d.phone}</td>
       <td>${d.city}</td>
-      <td><span class="badge active">ACTIVE</span></td>
-      <td>${d.createdAt?.toDate().toLocaleDateString() || "-"}</td>
+      <td>${d.requestedAt?.toDate().toLocaleString() || "-"}</td>
       <td>
-        <a href="/public/admin/dealers/dealer-detail.html?id=${docSnap.id}"
-           class="btn small">View</a>
+        <button onclick="approveDealer('${docSnap.id}')">Approve</button>
+        <button class="danger" onclick="rejectDealer('${docSnap.id}')">Reject</button>
       </td>
     `;
+
     table.appendChild(tr);
   });
 }
 
-loadDealers();
+// ✅ Approve dealer
+window.approveDealer = async (id) => {
+  await updateDoc(doc(db, "dealer_requests", id), {
+    status: "APPROVED",
+    approvedAt: serverTimestamp()
+  });
+
+  alert("Dealer approved");
+  loadDealerRequests();
+};
+
+// ❌ Reject dealer
+window.rejectDealer = async (id) => {
+  await updateDoc(doc(db, "dealer_requests", id), {
+    status: "REJECTED"
+  });
+
+  alert("Dealer rejected");
+  loadDealerRequests();
+};
+
+loadDealerRequests();
