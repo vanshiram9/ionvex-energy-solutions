@@ -1,13 +1,24 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Admin Login | Ionvex Energy</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />  <link rel="stylesheet" href="/css/main.css" />
-  <link rel="stylesheet" href="/public/admin/admin.css" />
-</head><body class="auth-page"><div class="auth-container">
-  <img src="/assets/images/logo.png" class="auth-logo" />  <h2>Admin Login</h2>  <input type="email" id="email" placeholder="Admin Email" />
-  <input type="password" id="password" placeholder="Password" /><button id="loginBtn" class="btn primary">Login</button>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/public/admin/admin.css">
+</head>
+<body class="auth-body">
 
-  <p id="error" class="error"></p>
-</div><script type="module" src="login.js"></script></body>
+  <div class="auth-box">
+    <h2>Admin / Dealer Login</h2>
+
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+
+    <button id="loginBtn">Login</button>
+
+    <p id="error" class="error"></p>
+  </div>
+
+  <script type="module" src="/public/admin/auth/login.js"></script>
+</body>
 </html>
