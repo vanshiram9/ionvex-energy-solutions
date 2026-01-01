@@ -12,43 +12,47 @@
 <body>
 
 <header class="customer-header">
-  <img src="/assets/images/logo.png" class="logo" alt="Ionvex Energy" />
-  <h2>Raise Warranty Claim</h2>
+  <img src="/assets/images/logo.png" class="logo" />
+  <h2>Warranty Claim Request</h2>
 </header>
 
 <main class="customer-main">
 
-  <form id="claimForm" class="card form-card">
-    <h3>Battery Claim Form</h3>
+  <form id="claimForm" class="card">
 
-    <div class="form-group">
-      <label>Battery Serial Number</label>
-      <input type="text" id="serial" readonly />
+    <h3>Battery Details</h3>
+
+    <div class="field">
+      <label>Serial Number</label>
+      <input id="serialInput" readonly />
     </div>
 
-    <div class="form-group">
-      <label>Issue Type</label>
-      <select id="issueType" required>
-        <option value="">Select Issue</option>
-        <option value="not_charging">Not Charging</option>
-        <option value="low_backup">Low Backup</option>
-        <option value="heating">Over Heating</option>
-        <option value="physical_damage">Physical Damage</option>
-        <option value="other">Other</option>
+    <div class="field">
+      <label>Problem Type</label>
+      <select id="problemType" required>
+        <option value="">Select</option>
+        <option>Battery Not Charging</option>
+        <option>Low Backup</option>
+        <option>BMS Issue</option>
+        <option>Physical Damage</option>
+        <option>Other</option>
       </select>
     </div>
 
-    <div class="form-group">
-      <label>Issue Description</label>
-      <textarea id="description" rows="4" placeholder="Describe the problem..." required></textarea>
+    <div class="field">
+      <label>Description</label>
+      <textarea id="description" placeholder="Explain the issue..." required></textarea>
     </div>
 
-    <div class="form-group">
-      <label>Upload Battery Image (optional)</label>
-      <input type="file" id="image" accept="image/*" />
+    <div class="field">
+      <label>Upload Image (optional)</label>
+      <input type="file" id="photo" accept="image/*" />
     </div>
 
-    <button type="submit" class="primary-btn">Submit Claim</button>
+    <button type="submit" class="btn primary">
+      Submit Claim
+    </button>
+
   </form>
 
 </main>
@@ -60,66 +64,77 @@
 <!-- ================= JS ================= -->
 <script type="module">
   import { db } from "/js/firebase/firestore.js";
-  import { uploadImage } from "/js/firebase/storage.js";
+  import { storage } from "/js/firebase/storage.js";
+
   import {
-    collection,
     addDoc,
-    serverTimestamp
+    collection,
+    serverTimestamp,
+    doc,
+    getDoc
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  import {
+    ref,
+    uploadBytes,
+    getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
   document.getElementById("year").innerText = new Date().getFullYear();
 
+  // 🔗 SERIAL FROM URL
   const params = new URLSearchParams(window.location.search);
-  const serialParam = params.get("serial");
+  const serial = params.get("serial");
 
-  if (!serialParam) {
+  if (!serial) {
     alert("Invalid access");
-    window.location.href = "/public/index.html";
+    location.href = "/public/customer/warranty.html";
   }
 
-  document.getElementById("serial").value = serialParam;
+  document.getElementById("serialInput").value = serial;
 
-  const form = document.getElementById("claimForm");
-
-  form.addEventListener("submit", async (e) => {
+  // 📨 SUBMIT CLAIM
+  document.getElementById("claimForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const issueType = document.getElementById("issueType").value;
-    const description = document.getElementById("description").value.trim();
-    const imageFile = document.getElementById("image").files[0];
+    const type = problemType.value;
+    const desc = description.value;
+    const file = photo.files[0];
 
-    if (!issueType || !description) {
-      alert("Please fill all required fields");
+    if (!type || !desc) {
+      alert("Fill all required fields");
+      return;
+    }
+
+    // 🔍 VERIFY BATTERY
+    const batterySnap = await getDoc(doc(db, "batteries", serial));
+    if (!batterySnap.exists() || batterySnap.data().status !== "ACTIVE") {
+      alert("Warranty not active");
       return;
     }
 
     let imageUrl = "";
 
-    try {
-      if (imageFile) {
-        imageUrl = await uploadImage(
-          imageFile,
-          `claims/${serialParam}_${Date.now()}`
-        );
-      }
-
-      await addDoc(collection(db, "claims"), {
-        serial: serialParam,
-        issueType,
-        description,
-        imageUrl,
-        status: "pending",
-        createdAt: serverTimestamp(),
-        source: "customer"
-      });
-
-      alert("Claim submitted successfully ✅");
-      window.location.href = `/public/customer/track-claim.html?serial=${serialParam}`;
-
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong. Try again.");
+    // 📤 UPLOAD IMAGE
+    if (file) {
+      const imgRef = ref(storage, `claims/${serial}_${Date.now()}`);
+      await uploadBytes(imgRef, file);
+      imageUrl = await getDownloadURL(imgRef);
     }
+
+    // 📝 SAVE CLAIM
+    await addDoc(collection(db, "claims"), {
+      serial,
+      problemType: type,
+      description: desc,
+      imageUrl,
+      status: "PENDING",
+      createdAt: serverTimestamp(),
+      source: "CUSTOMER"
+    });
+
+    alert("Claim submitted successfully!");
+    location.href = "/public/customer/warranty.html";
   });
 </script>
 
