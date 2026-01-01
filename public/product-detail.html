@@ -5,138 +5,83 @@
   <title>Product Details | Ionvex Energy Solutions</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Ionvex lithium battery product details, specifications and warranty information." />
+  <meta name="description" content="Detailed specifications, warranty and features of Ionvex Energy lithium battery." />
 
   <!-- GLOBAL CSS -->
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/customer.css" />
+  <link rel="stylesheet" href="/css/main.css" />
 
-  <link rel="icon" href="../assets/images/logo.png" />
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
-<header class="main-header">
-  <div class="logo">
-    <img src="../assets/images/logo.png" alt="Ionvex Energy Solutions" />
-  </div>
-
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="products.html" class="active">Products</a>
-    <a href="warranty.html">Warranty</a>
-    <a href="login.html">Login</a>
-  </nav>
-</header>
-
-<!-- ================= PRODUCT DETAIL ================= -->
-<main class="product-detail-container">
-
-  <div class="product-image">
-    <img id="productImage" src="" alt="Battery Image" />
-  </div>
-
-  <div class="product-info">
-    <h1 id="productName"></h1>
-
-    <p id="productDesc" class="product-desc"></p>
-
-    <ul class="spec-list">
-      <li><strong>Category:</strong> <span id="productCategory"></span></li>
-      <li><strong>Voltage:</strong> <span id="productVoltage"></span></li>
-      <li><strong>Capacity:</strong> <span id="productCapacity"></span></li>
-      <li><strong>Range:</strong> <span id="productRange"></span></li>
-      <li><strong>Charging Time:</strong> <span id="productCharge"></span></li>
-      <li><strong>Warranty:</strong> <span id="productWarranty"></span></li>
-    </ul>
-
-    <div class="product-actions">
-      <a href="warranty.html" class="btn-primary">Check Warranty</a>
-      <a href="dealer-register.html" class="btn-secondary">Become Dealer</a>
+  <!-- ================= HEADER ================= -->
+  <header class="main-header">
+    <div class="logo">
+      <img src="/assets/images/logo.png" alt="Ionvex Energy" />
+      <span>Ionvex Energy</span>
     </div>
-  </div>
 
-</main>
+    <nav class="main-nav">
+      <a href="/public/index.html">Home</a>
+      <a href="/public/products.html">Products</a>
+      <a href="/public/warranty.html">Warranty</a>
+      <a href="/public/login.html">Login</a>
+    </nav>
+  </header>
 
-<!-- ================= FOOTER ================= -->
-<footer class="main-footer">
-  <p>© 2026 Ionvex Energy Solutions. All Rights Reserved.</p>
-</footer>
+  <!-- ================= PRODUCT DETAIL ================= -->
+  <section class="product-detail-container">
 
-<!-- ================= HYBRID JS ================= -->
-<script>
-/**
- * TEMP PRODUCT DATABASE
- * Later auto-load from Firestore (admin controlled)
- */
-const PRODUCT_DB = {
-  "P-2W-60": {
-    name: "Ionvex 2W Lithium Battery 60Ah",
-    category: "2 Wheeler",
-    voltage: "48V",
-    capacity: "60Ah",
-    range: "90 km",
-    charge: "3-4 Hours",
-    warranty: "3 Years",
-    image: "../assets/images/batteries/2w/48v-60ah.png",
-    desc: "Designed for electric scooters. Lightweight, fast charging and long cycle life with smart BMS."
-  },
-  "P-2W-100": {
-    name: "Ionvex 2W Lithium Battery 100Ah",
-    category: "2 Wheeler",
-    voltage: "48V",
-    capacity: "100Ah",
-    range: "130 km",
-    charge: "4-5 Hours",
-    warranty: "3 Years",
-    image: "../assets/images/batteries/2w/48v-100ah.png",
-    desc: "High capacity lithium battery for extended range electric two-wheelers."
-  },
-  "P-3W-120": {
-    name: "Ionvex 3W Lithium Battery 120Ah",
-    category: "3 Wheeler",
-    voltage: "48V",
-    capacity: "120Ah",
-    range: "160 km",
-    charge: "5 Hours",
-    warranty: "4 Years",
-    image: "../assets/images/batteries/3w/48v-120ah.png",
-    desc: "Commercial grade battery designed for electric rickshaws with high durability."
-  },
-  "P-4W-200": {
-    name: "Ionvex 4W Lithium Battery 200Ah",
-    category: "4 Wheeler",
-    voltage: "72V",
-    capacity: "200Ah",
-    range: "300 km",
-    charge: "6-7 Hours",
-    warranty: "5 Years",
-    image: "../assets/images/batteries/4w/72v-200ah.png",
-    desc: "Premium lithium battery pack for electric cars and fleet vehicles."
-  }
-};
+    <!-- LEFT : IMAGE -->
+    <div class="product-image">
+      <img id="productImage" src="/assets/images/placeholders/battery.png" alt="Battery Image">
+    </div>
 
-// GET PRODUCT ID FROM URL
-const params = new URLSearchParams(window.location.search);
-const productId = params.get("id");
+    <!-- RIGHT : INFO -->
+    <div class="product-info">
+      <h1 id="productName">Battery Name</h1>
 
-if (!productId || !PRODUCT_DB[productId]) {
-  document.querySelector(".product-detail-container").innerHTML =
-    "<p class='error'>Product not found.</p>";
-} else {
-  const p = PRODUCT_DB[productId];
+      <p id="productCategory" class="badge">EV Battery</p>
 
-  document.getElementById("productName").innerText = p.name;
-  document.getElementById("productCategory").innerText = p.category;
-  document.getElementById("productVoltage").innerText = p.voltage;
-  document.getElementById("productCapacity").innerText = p.capacity;
-  document.getElementById("productRange").innerText = p.range;
-  document.getElementById("productCharge").innerText = p.charge;
-  document.getElementById("productWarranty").innerText = p.warranty;
-  document.getElementById("productImage").src = p.image;
-  document.getElementById("productDesc").innerText = p.desc;
-}
-</script>
+      <p id="productDescription">
+        Loading product description...
+      </p>
+
+      <ul class="product-specs">
+        <li><strong>Voltage:</strong> <span id="productVoltage">—</span></li>
+        <li><strong>Capacity:</strong> <span id="productCapacity">—</span></li>
+        <li><strong>Range:</strong> <span id="productRange">—</span></li>
+        <li><strong>Cycle Life:</strong> <span id="productCycles">—</span></li>
+        <li><strong>Warranty:</strong> <span id="productWarranty">—</span></li>
+      </ul>
+
+      <div class="product-actions">
+        <a href="/public/dealer-register.html" class="btn-primary">Become a Dealer</a>
+        <a href="/public/warranty.html" class="btn-outline">Check Warranty</a>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="main-footer">
+    <p>© <span id="year"></span> Ionvex Energy Solutions. All rights reserved.</p>
+  </footer>
+
+  <!-- ================= JS ================= -->
+  <script type="module">
+    import { loadSingleProduct } from "/js/home/home.js";
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get("id");
+
+    if (!productId) {
+      alert("Invalid product");
+    } else {
+      loadSingleProduct(productId);
+    }
+  </script>
 
 </body>
-  </html>
+        </html>
