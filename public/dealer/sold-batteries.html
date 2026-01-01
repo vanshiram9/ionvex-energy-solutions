@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sold Batteries | Dealer Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/dealer.css" />
+</head>
+<body>
+
+<!-- 🔐 AUTH + ROLE GUARD -->
+<script type="module">
+  import { auth } from "/js/firebase/auth.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getUserRole } from "/js/firebase/role.js";
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "/public/login.html";
+      return;
+    }
+
+    const role = await getUserRole(user.uid);
+    if (role !== "DEALER") {
+      window.location.href = "/public/login.html";
+    }
+  });
+</script>
+
+<!-- ================= HEADER ================= -->
+<header class="dealer-header">
+  <h2>Sold / Activated Batteries</h2>
+  <a href="/public/dealer/dashboard.html" class="btn-outline">← Back</a>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main class="dealer-main">
+
+  <h1>My Activated Batteries</h1>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Serial No</th>
+        <th>Customer</th>
+        <th>Phone</th>
+        <th>Vehicle</th>
+        <th>Activated On</th>
+        <th>Warranty Expiry</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="batteryTable">
+      <tr><td colspan="7">Loading...</td></tr>
+    </tbody>
+  </table>
+
+</main>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { auth } from "/js/firebase/auth.js";
+  import { db } from "/js/firebase/firestore.js";
+  import {
+    collection,
+    query,
+    where,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const table = document.getElementById("batteryTable");
+
+  async function loadBatteries() {
+    table.innerHTML = "<tr><td colspan='7'>Loading...</td></tr>";
+
+    try {
+      const q = query(
+        collection(db, "batteries"),
+        where("activatedBy", "==", auth.currentUser.uid)
+      );
+
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        table.innerHTML = "<tr><td colspan='7'>No batteries activated yet</td></tr>";
+        return;
+      }
+
+      table.innerHTML = "";
+
+      snap.forEach(docSnap => {
+        const b = docSnap.data();
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${docSnap.id}</td>
+          <td>${b.customerName || "-"}</td>
+          <td>${b.customerPhone || "-"}</td>
+          <td>${b.vehicleType || "-"}</td>
+          <td>${b.activatedAt?.toDate().toLocaleDateString() || "-"}</td>
+          <td>${b.warrantyExpiry?.toDate
+            ? b.warrantyExpiry.toDate().toLocaleDateString()
+            : "-"}</td>
+          <td><span class="status active">ACTIVE</span></td>
+        `;
+        table.appendChild(tr);
+      });
+
+    } catch (err) {
+      table.innerHTML = `<tr><td colspan="7">Error: ${err.message}</td></tr>`;
+    }
+  }
+
+  loadBatteries();
+</script>
+
+</body>
+</html>
