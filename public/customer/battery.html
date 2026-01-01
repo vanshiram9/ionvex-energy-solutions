@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Battery Status | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/customer.css" />
+</head>
+<body>
+
+<header class="customer-header">
+  <img src="/assets/images/logo.png" class="logo" alt="Ionvex Energy" />
+  <h2>Battery Details</h2>
+</header>
+
+<main class="customer-main">
+
+  <section class="card" id="batteryCard">
+    <h3>Battery Information</h3>
+
+    <div class="info-row"><span>Serial Number:</span><strong id="serial"></strong></div>
+    <div class="info-row"><span>Model:</span><strong id="model"></strong></div>
+    <div class="info-row"><span>Capacity:</span><strong id="capacity"></strong></div>
+    <div class="info-row"><span>Vehicle Type:</span><strong id="vehicle"></strong></div>
+
+    <hr/>
+
+    <div class="info-row"><span>Warranty Status:</span><strong id="warrantyStatus"></strong></div>
+    <div class="info-row"><span>Warranty Expiry:</span><strong id="expiry"></strong></div>
+
+    <div class="health-box">
+      <h4>Battery Health</h4>
+      <div class="health-bar">
+        <div class="health-fill" id="healthFill"></div>
+      </div>
+      <p id="healthText"></p>
+    </div>
+
+    <button id="claimBtn" class="danger-btn">Raise Warranty Claim</button>
+  </section>
+
+</main>
+
+<footer class="customer-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { db } from "/js/firebase/firestore.js";
+  import {
+    collection,
+    query,
+    where,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  document.getElementById("year").innerText = new Date().getFullYear();
+
+  const params = new URLSearchParams(window.location.search);
+  const serialParam = params.get("serial");
+
+  if (!serialParam) {
+    alert("Invalid access");
+    window.location.href = "/public/customer/index.html";
+  }
+
+  async function loadBattery() {
+    const q = query(
+      collection(db, "batteries"),
+      where("serial", "==", serialParam)
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      alert("Battery record not found");
+      return;
+    }
+
+    const data = snap.docs[0].data();
+
+    document.getElementById("serial").innerText = data.serial;
+    document.getElementById("model").innerText = data.model || "-";
+    document.getElementById("capacity").innerText = data.capacity || "-";
+    document.getElementById("vehicle").innerText = data.vehicleType || "-";
+
+    const today = new Date();
+    const expiry = data.warrantyExpiry?.toDate();
+
+    document.getElementById("expiry").innerText =
+      expiry ? expiry.toDateString() : "N/A";
+
+    const isActive = expiry && expiry >= today;
+    document.getElementById("warrantyStatus").innerText =
+      isActive ? "ACTIVE ✅" : "EXPIRED ❌";
+
+    const health = data.healthPercent || 80;
+    document.getElementById("healthFill").style.width = health + "%";
+    document.getElementById("healthText").innerText =
+      health + "% health remaining";
+
+    if (!isActive) {
+      document.getElementById("claimBtn").disabled = true;
+      document.getElementById("claimBtn").innerText = "Warranty Expired";
+    }
+  }
+
+  document.getElementById("claimBtn").addEventListener("click", () => {
+    window.location.href =
+      `/public/customer/raise-claim.html?serial=${serialParam}`;
+  });
+
+  loadBattery();
+</script>
+
+</body>
+</html>
