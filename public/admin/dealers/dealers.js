@@ -40,6 +40,38 @@ async function loadDealerRequests() {
   });
 }
 
+// 🔹 Load approved dealers
+async function loadApprovedDealers() {
+  const table = document.getElementById("dealersTable");
+  if (!table) return;
+
+  table.innerHTML = "";
+
+  const snap = await getDocs(collection(db, "dealer_requests"));
+
+  snap.forEach(docSnap => {
+    const d = docSnap.data();
+    if (d.status !== "APPROVED") return;
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${d.name}</td>
+      <td>${d.email}</td>
+      <td>${d.phone}</td>
+      <td>${d.city}</td>
+      <td><span class="badge success">ACTIVE</span></td>
+      <td>
+        <a href="dealer-detail.html?id=${docSnap.id}">View</a>
+      </td>
+    `;
+
+    table.appendChild(tr);
+  });
+}
+
+loadApprovedDealers();
+
 // ✅ Approve dealer
 window.approveDealer = async (id) => {
   await updateDoc(doc(db, "dealer_requests", id), {
