@@ -1,16 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Battery Details</title>
-  <link rel="stylesheet" href="/css/main.css">
-  <script type="module" src="/js/firebase/app.js"></script>
+  <meta charset="UTF-8" />
+  <title>Product Details | Ionvex Energy Solutions</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Detailed specifications, features and warranty information of Ionvex lithium battery products." />
+
+  <!-- GLOBAL CSS -->
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/customer.css" />
+
+  <link rel="icon" href="../assets/images/logo.png" />
 </head>
 <body>
 
-<h1 id="productName"></h1>
-<img id="productImage">
-<p id="productDesc"></p>
+<!-- ================= HEADER ================= -->
+<header class="main-header">
+  <div class="logo">
+    <img src="../assets/images/logo.png" alt="Ionvex Energy Solutions" />
+  </div>
 
-<script type="module" src="/js/home/productDetail.js"></script>
-</body>
-</html>
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="warranty.html">Warranty</a>
+    <a href="login.html">Login</a>
+  </nav>
+</header>
+
+<!-- ================= PRODUCT DETAIL ================= -->
+<main class="product-detail-container">
+
+  <!-- LEFT : IMAGE -->
+  <section class="product-images">
+    <img id="productImage" src="../assets/images/batteries/2w/battery-60ah.png" alt="Product Image" />
+  </section>
+
+  <!-- RIGHT : INFO -->
+  <section class="product-info">
+    <h1 id="productName">Ionvex Battery</h1>
+    <p id="productDesc">
+      High-performance lithium battery engineered for durability, safety and long life.
+    </p>
+
+    <div class="product-highlights">
+      <span>🔋 <strong id="capacity">—</strong> Ah</span>
+      <span>⚡ Fast Charging</span>
+      <span>🛡 <strong id="warranty">—</strong> Years Warranty</span>
+    </div>
+
+    <!-- SPEC TABLE -->
+    <table class="spec-table">
+      <tr>
+        <th>Nominal Voltage</th>
+        <td id="voltage">—</td>
+      </tr>
+      <tr>
+        <th>Battery Chemistry</th>
+        <td>Lithium-ion (LFP)</td>
+      </tr>
+      <tr>
+        <th>Cycle Life</th>
+        <td id="cycles">—</td>
+      </tr>
+      <tr>
+        <th>Operating Temp</th>
+        <td>-10°C to 55°C</td>
+      </tr>
+      <tr>
+        <th>BMS</th>
+        <td>Smart BMS with protection</td>
+      </tr>
+    </table>
+
+    <!-- CTA -->
+    <div class="product-actions">
+      <a href="dealer-register.html" class="btn-primary">Become Dealer</a>
+      <a href="warranty.html" class="btn-secondary">Check Warranty</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= EXTRA INFO ================= -->
+<section class="product-extra">
+  <h2>Why Choose Ionvex?</h2>
+  <ul>
+    <li>✔ Automotive-grade cells</li>
+    <li>✔ Over-charge / over-discharge protection</li>
+    <li>✔ Thermal &
