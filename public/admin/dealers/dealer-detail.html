@@ -1,44 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Dealer Detail | Admin</title>
+  <meta charset="UTF-8">
+  <title>Dealer Detail | Ionvex Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="/css/main.css" />
-  <link rel="stylesheet" href="/public/admin/layout/layout.css" />
-
-  <script type="module" src="/public/admin/auth/auth-guard.js"></script>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/public/admin/layout/layout.css">
 </head>
 <body>
+
+<!-- 🔐 AUTH -->
+<script type="module" src="/public/admin/auth/auth-guard.js"></script>
 
 <div id="header"></div>
 <div id="sidebar"></div>
 
 <main class="admin-main">
-  <h1>Dealer Profile</h1>
 
-  <!-- Dealer Info -->
+  <h1>Dealer Detail</h1>
+
+  <!-- BASIC INFO -->
   <section class="card">
     <h3>Dealer Information</h3>
-    <p><b>Name:</b> <span id="dealerName"></span></p>
-    <p><b>Email:</b> <span id="dealerEmail"></span></p>
-    <p><b>Phone:</b> <span id="dealerPhone"></span></p>
-    <p><b>City:</b> <span id="dealerCity"></span></p>
-    <p><b>Status:</b> <span id="dealerStatus"></span></p>
+    <p><strong>Name:</strong> <span id="dName"></span></p>
+    <p><strong>Email:</strong> <span id="dEmail"></span></p>
+    <p><strong>Phone:</strong> <span id="dPhone"></span></p>
+    <p><strong>City:</strong> <span id="dCity"></span></p>
+    <p><strong>Status:</strong> <span id="dStatus"></span></p>
   </section>
 
-  <!-- Stats -->
-  <section class="cards">
-    <div class="card">Activated Batteries<br><b id="batteryCount">0</b></div>
-    <div class="card">Active Warranties<br><b id="activeWarranty">0</b></div>
-    <div class="card">Warranty Claims<br><b id="claimCount">0</b></div>
+  <!-- STATS -->
+  <section class="card">
+    <h3>Dealer Statistics</h3>
+    <ul>
+      <li>Total Batteries: <span id="statBatteries">0</span></li>
+      <li>Active Warranties: <span id="statWarranty">0</span></li>
+      <li>Total Claims: <span id="statClaims">0</span></li>
+    </ul>
   </section>
 
-  <!-- Actions -->
+  <!-- ACTIONS -->
   <section class="card">
     <h3>Admin Actions</h3>
-    <button id="suspendBtn" class="btn danger">Suspend Dealer</button>
+    <button id="blockBtn" class="danger">Block Dealer</button>
+    <button id="unblockBtn" class="success">Unblock Dealer</button>
   </section>
+
 </main>
 
 <script>
@@ -46,6 +54,7 @@ fetch("/public/admin/layout/header.html").then(r=>r.text()).then(t=>header.inner
 fetch("/public/admin/layout/sidebar.html").then(r=>r.text()).then(t=>sidebar.innerHTML=t);
 </script>
 
-<script type="module" src="/public/admin/dealers/dealer-detail.js"></script>
+<script type="module" src="/public/admin/dealers/dealers.js"></script>
+
 </body>
 </html>
