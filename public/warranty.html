@@ -1,19 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Warranty Check | Ionvex</title>
-  <link rel="stylesheet" href="/css/main.css">
-  <script type="module" src="/js/firebase/app.js"></script>
+  <meta charset="UTF-8" />
+  <title>Warranty Check | Ionvex Energy Solutions</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Check warranty status of Ionvex lithium batteries using serial number." />
+
+  <!-- GLOBAL CSS -->
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/customer.css" />
+
+  <link rel="icon" href="../assets/images/logo.png" />
 </head>
 <body>
 
-<h2>Battery Warranty Check</h2>
+<!-- ================= HEADER ================= -->
+<header class="main-header">
+  <div class="logo">
+    <img src="../assets/images/logo.png" alt="Ionvex Energy Solutions" />
+  </div>
 
-<input id="serialInput" placeholder="Enter Serial Number">
-<button id="checkBtn">Check</button>
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="warranty.html" class="active">Warranty</a>
+    <a href="login.html">Login</a>
+  </nav>
+</header>
 
-<div id="result"></div>
+<!-- ================= WARRANTY CHECK ================= -->
+<main class="warranty-container">
 
-<script type="module" src="/js/warranty/checkWarranty.js"></script>
+  <h1>Warranty Status Check</h1>
+  <p>Enter your battery serial number to check warranty details.</p>
+
+  <div class="warranty-form">
+    <input
+      type="text"
+      id="serialInput"
+      placeholder="Enter Battery Serial Number"
+      autocomplete="off"
+    />
+    <button id="checkBtn" class="btn-primary">Check Warranty</button>
+  </div>
+
+  <!-- RESULT BOX -->
+  <div id="warrantyResult" class="warranty-result hidden"></div>
+
+</main>
+
+<!-- ================= INFO ================= -->
+<section class="warranty-info">
+  <h2>Ionvex Warranty Policy</h2>
+  <ul>
+    <li>✔ Warranty starts from activation date by authorized dealer</li>
+    <li>✔ Covers manufacturing defects only</li>
+    <li>✔ Physical damage & misuse not covered</li>
+    <li>✔ Smart BMS logs checked during claims</li>
+  </ul>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="main-footer">
+  <p>© 2026 Ionvex Energy Solutions. All Rights Reserved.</p>
+</footer>
+
+<!-- ================= JS (HYBRID) ================= -->
+<script>
+  /**
+   * TEMP MOCK DATA
+   * Later: replace with Firestore read
+   */
+  const WARRANTY_DB = {
+    "IONVEX-2W-001": {
+      product: "Ionvex 2W 60Ah",
+      activatedOn: "2025-01-12",
+      warrantyYears: 3,
+      status: "ACTIVE"
+    },
+    "IONVEX-3W-010": {
+      product: "Ionvex 3W 100Ah",
+      activatedOn: "2024-05-20",
+      warrantyYears: 4,
+      status: "EXPIRED"
+    }
+  };
+
+  const input = document.getElementById("serialInput");
+  const btn = document.getElementById("checkBtn");
+  const resultBox = document.getElementById("warrantyResult");
+
+  btn.addEventListener("click", () => {
+    const serial = input.value.trim().toUpperCase();
+    resultBox.classList.remove("hidden");
+
+    if (!serial) {
+      resultBox.innerHTML = `<p class="error">Please enter a serial number.</p>`;
+      return;
+    }
+
+    const data = WARRANTY_DB[serial];
+
+    if (!data) {
+      resultBox.innerHTML = `
+        <p class="error">❌ Serial number not found.</p>
+        <p>Please contact your dealer or support.</p>
+      `;
+      return;
+    }
+
+    resultBox.innerHTML = `
+      <h3>Warranty Details</h3>
+      <p><strong>Product:</strong> ${data.product}</p>
+      <p><strong>Activated On:</strong> ${data.activatedOn}</p>
+      <p><strong>Warranty:</strong> ${data.warrantyYears} Years</p>
+      <p>
+        <strong>Status:</strong>
+        <span class="${data.status === "ACTIVE" ? "success" : "error"}">
+          ${data.status}
+        </span>
+      </p>
+    `;
+  });
+</script>
+
 </body>
 </html>
