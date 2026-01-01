@@ -2,128 +2,153 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Dealer Dashboard | Ionvex Energy</title>
+  <title>Dealer Dashboard | Ionvex Energy Solutions</title>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS -->
+  <!-- GLOBAL CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/dealer.css" />
+</head>
+<body>
 
-  <!-- Firebase (DO NOT REPEAT app.js) -->
-  <script type="module">
-    import { auth } from "/js/firebase/auth.js";
-    import { db } from "/js/firebase/firestore.js";
-    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<!-- 🔐 AUTH + ROLE GUARD -->
+<script type="module">
+  import { auth } from "/js/firebase/auth.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getUserRole } from "/js/firebase/role.js";
 
-    let dealerId = null;
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "/public/login.html";
+      return;
+    }
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "/login.html";
-        return;
-      }
+    const role = await getUserRole(user.uid);
+    if (role !== "DEALER") {
+      window.location.href = "/public/login.html";
+    }
+  });
+</script>
 
-      dealerId = user.uid;
-      loadDashboard();
+<!-- ================= HEADER ================= -->
+<header class="dealer-header">
+  <h2>Ionvex Dealer Panel</h2>
+  <button id="logoutBtn" class="btn-outline">Logout</button>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main class="dealer-main">
+
+  <h1>Welcome, Dealer 👋</h1>
+
+  <!-- STATS -->
+  <section class="dealer-cards">
+
+    <div class="card">
+      <h3>Activated Batteries</h3>
+      <span id="totalActivated">0</span>
+    </div>
+
+    <div class="card">
+      <h3>Active Warranties</h3>
+      <span id="activeWarranty">0</span>
+    </div>
+
+    <div class="card">
+      <h3>Warranty Claims</h3>
+      <span id="totalClaims">0</span>
+    </div>
+
+  </section>
+
+  <!-- QUICK ACTIONS -->
+  <section class="dealer-actions">
+    <a href="/public/dealer/activate-warranty.html" class="btn-primary">
+      Activate Warranty
+    </a>
+
+    <a href="/public/dealer/sold-batteries.html" class="btn-secondary">
+      Sold Batteries
+    </a>
+
+    <a href="/public/dealer/claims.html" class="btn-secondary">
+      Warranty Claims
+    </a>
+  </section>
+
+  <!-- RECENT ACTIVATIONS -->
+  <section class="dealer-list">
+    <h2>Recent Warranty Activations</h2>
+    <ul id="recentList"></ul>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="dealer-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { auth, logout } from "/js/firebase/auth.js";
+  import { db } from "/js/firebase/firestore.js";
+  import {
+    collection,
+    query,
+    where,
+    orderBy,
+    limit,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  document.getElementById("logoutBtn").onclick = () => logout();
+
+  async function loadDashboard() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const q = query(
+      collection(db, "batteries"),
+      where("activatedBy", "==", user.uid)
+    );
+
+    const snap = await getDocs(q);
+
+    let total = 0;
+    let active = 0;
+
+    snap.forEach(doc => {
+      total++;
+      if (doc.data().status === "ACTIVE") active++;
     });
 
-    async function loadDashboard() {
-      await loadStats();
-      await loadRecentActivations();
-    }
+    document.getElementById("totalActivated").textContent = total;
+    document.getElementById("activeWarranty").textContent = active;
 
-    async function loadStats() {
-      const batteriesRef = collection(db, "batteries");
-      const q = query(batteriesRef, where("dealerId", "==", dealerId));
+    const recentQ = query(
+      collection(db, "batteries"),
+      where("activatedBy", "==", user.uid),
+      orderBy("activatedAt", "desc"),
+      limit(5)
+    );
 
-      const snapshot = await getDocs(q);
+    const recentSnap = await getDocs(recentQ);
+    const list = document.getElementById("recentList");
+    list.innerHTML = "";
 
-      let total = 0, active = 0, expired = 0;
+    recentSnap.forEach(doc => {
+      const li = document.createElement("li");
+      li.textContent = `${doc.id} | ${doc.data().customerName}`;
+      list.appendChild(li);
+    });
+  }
 
-      snapshot.forEach(doc => {
-        total++;
-        const d = doc.data();
-        if (d.status === "active") active++;
-        if (d.status === "expired") expired++;
-      });
-
-      document.getElementById("totalBatteries").innerText = total;
-      document.getElementById("activeBatteries").innerText = active;
-      document.getElementById("expiredBatteries").innerText = expired;
-    }
-
-    async function loadRecentActivations() {
-      const list = document.getElementById("recentList");
-      list.innerHTML = "";
-
-      const q = query(
-        collection(db, "batteries"),
-        where("dealerId", "==", dealerId)
-      );
-
-      const snapshot = await getDocs(q);
-
-      snapshot.docs.slice(0, 5).forEach(doc => {
-        const d = doc.data();
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <strong>${d.serialNumber}</strong>
-          <span>${d.model}</span>
-          <small>Status: ${d.status}</small>
-        `;
-        list.appendChild(li);
-      });
-    }
-
-    window.logoutDealer = async () => {
-      await signOut(auth);
-      window.location.href = "/login.html";
-    };
-  </script>
-</head>
-
-<body>
-  <!-- HEADER -->
-  <header class="dealer-header">
-    <h1>Ionvex Dealer Panel</h1>
-    <button onclick="logoutDealer()">Logout</button>
-  </header>
-
-  <!-- DASHBOARD -->
-  <main class="dealer-dashboard">
-
-    <!-- STATS -->
-    <section class="stats">
-      <div class="card">
-        <h3>Total Batteries</h3>
-        <p id="totalBatteries">0</p>
-      </div>
-
-      <div class="card">
-        <h3>Active Warranty</h3>
-        <p id="activeBatteries">0</p>
-      </div>
-
-      <div class="card">
-        <h3>Expired</h3>
-        <p id="expiredBatteries">0</p>
-      </div>
-    </section>
-
-    <!-- QUICK ACTIONS -->
-    <section class="actions">
-      <a href="activate-warranty.html">+ Activate Warranty</a>
-      <a href="sold-batteries.html">View Sold Batteries</a>
-      <a href="claims.html">Warranty Claims</a>
-    </section>
-
-    <!-- RECENT -->
-    <section class="recent">
-      <h2>Recent Activations</h2>
-      <ul id="recentList"></ul>
-    </section>
-
-  </main>
+  loadDashboard();
+</script>
 
 </body>
-</html>
+  </html>
