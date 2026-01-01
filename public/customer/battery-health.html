@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Battery Health | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/customer.css" />
+</head>
+<body>
+
+<header class="customer-header">
+  <img src="/assets/images/logo.png" class="logo" />
+  <h2>Battery Health & Warranty</h2>
+</header>
+
+<main class="customer-main">
+
+  <section class="card">
+    <h3>Check Battery Health</h3>
+
+    <div class="inline-form">
+      <input id="serialInput" placeholder="Battery Serial Number" />
+      <button id="checkBtn" class="btn primary">Check</button>
+    </div>
+  </section>
+
+  <section id="result" class="health-section"></section>
+
+</main>
+
+<footer class="customer-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { db } from "/js/firebase/firestore.js";
+
+  import {
+    doc,
+    getDoc,
+    collection,
+    query,
+    where,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  document.getElementById("year").innerText = new Date().getFullYear();
+
+  const result = document.getElementById("result");
+
+  document.getElementById("checkBtn").addEventListener("click", async () => {
+    const serial = document.getElementById("serialInput").value.trim();
+
+    if (!serial) {
+      alert("Enter serial number");
+      return;
+    }
+
+    result.innerHTML = "Loading...";
+
+    const ref = doc(db, "batteries", serial);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      result.innerHTML = "<p>Battery not found.</p>";
+      return;
+    }
+
+    const b = snap.data();
+    const today = new Date();
+    const expiry = b.warrantyExpiry?.toDate();
+    const remaining = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+
+    // 🔍 Claim count
+    const cq = query(
+      collection(db, "claims"),
+      where("serial", "==", serial)
+    );
+    const csnap = await getDocs(cq);
+
+    result.innerHTML = `
+      <div class="health-card status-${b.status}">
+        <h3>Battery Summary</h3>
+
+        <p><b>Status:</b> ${b.status}</p>
+        <p><b>Vehicle:</b> ${b.vehicleType}</p>
+        <p><b>Activated:</b> ${b.activatedAt?.toDate().toLocaleDateString()}</p>
+        <p><b>Warranty Expiry:</b> ${expiry.toLocaleDateString()}</p>
+        <p><b>Remaining Days:</b> ${remaining > 0 ? remaining : 0}</p>
+
+        <hr>
+
+        <p><b>Total Claims:</b> ${csnap.size}</p>
+
+        <span class="badge ${remaining > 0 ? "valid" : "expired"}">
+          ${remaining > 0 ? "Warranty Valid" : "Warranty Expired"}
+        </span>
+      </div>
+    `;
+  });
+</script>
+
+</body>
+</html>
