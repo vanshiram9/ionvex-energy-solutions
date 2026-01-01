@@ -5,114 +5,120 @@
   <title>Warranty Check | Ionvex Energy Solutions</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Check lithium battery warranty status online using serial or QR code" />
+  <meta name="description" content="Check your Ionvex Energy battery warranty status using serial number." />
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/customer.css" />
+  <!-- GLOBAL CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
 
-  <link rel="icon" href="../assets/images/logo.png" />
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
-<header class="main-header">
-  <div class="logo">
-    <img src="../assets/images/logo.png" alt="Ionvex Energy Solutions" />
-  </div>
+  <!-- ================= HEADER ================= -->
+  <header class="main-header">
+    <div class="logo">
+      <img src="/assets/images/logo.png" alt="Ionvex Energy" />
+      <span>Ionvex Energy</span>
+    </div>
 
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="products.html">Products</a>
-    <a href="login.html">Login</a>
-  </nav>
-</header>
+    <nav class="main-nav">
+      <a href="/public/index.html">Home</a>
+      <a href="/public/products.html">Products</a>
+      <a href="/public/warranty.html" class="active">Warranty</a>
+      <a href="/public/login.html">Login</a>
+    </nav>
+  </header>
 
-<!-- ================= WARRANTY CHECK ================= -->
-<main class="warranty-container">
+  <!-- ================= WARRANTY CHECK ================= -->
+  <section class="warranty-container">
 
-  <h1>Warranty Status Check</h1>
-  <p>Enter Battery Serial Number or scan QR code</p>
+    <h1>Battery Warranty Check</h1>
+    <p>Enter your battery serial number to view warranty status.</p>
 
-  <div class="warranty-card">
+    <div class="warranty-form">
+      <input
+        type="text"
+        id="serialInput"
+        placeholder="Enter Battery Serial Number"
+        autocomplete="off"
+      />
+      <button id="checkBtn" class="btn-primary">
+        Check Warranty
+      </button>
+    </div>
 
-    <input
-      type="text"
-      id="serialInput"
-      placeholder="Enter Battery Serial Number"
-    />
+    <!-- RESULT -->
+    <div id="warrantyResult" class="warranty-result hidden">
 
-    <button id="checkBtn" class="btn-primary">
-      Check Warranty
-    </button>
+      <h3>Status: <span id="statusText"></span></h3>
 
-    <div id="resultBox" class="result-box hidden"></div>
+      <ul>
+        <li><strong>Battery Model:</strong> <span id="resModel"></span></li>
+        <li><strong>Customer Name:</strong> <span id="resCustomer"></span></li>
+        <li><strong>Activated On:</strong> <span id="resStart"></span></li>
+        <li><strong>Valid Till:</strong> <span id="resEnd"></span></li>
+        <li><strong>Warranty Type:</strong> <span id="resType"></span></li>
+      </ul>
 
-  </div>
+    </div>
 
-</main>
+    <!-- ERROR -->
+    <div id="errorBox" class="error-box hidden"></div>
 
-<!-- ================= FOOTER ================= -->
-<footer class="main-footer">
-  <p>© 2026 Ionvex Energy Solutions</p>
-</footer>
+  </section>
 
-<!-- ================= HYBRID WARRANTY JS ================= -->
-<script type="module">
-  import { getFirestore, doc, getDoc } from
-    "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  <!-- ================= FOOTER ================= -->
+  <footer class="main-footer">
+    <p>© <span id="year"></span> Ionvex Energy Solutions. All rights reserved.</p>
+  </footer>
 
-  import { app } from "../js/firebase/app.js";
+  <!-- ================= JS ================= -->
+  <script type="module">
+    import { checkWarrantyBySerial } from "/js/home/warrantyQuickCheck.js";
 
-  const db = getFirestore(app);
+    document.getElementById("year").textContent = new Date().getFullYear();
 
-  const serialInput = document.getElementById("serialInput");
-  const checkBtn = document.getElementById("checkBtn");
-  const resultBox = document.getElementById("resultBox");
+    const btn = document.getElementById("checkBtn");
+    const serialInput = document.getElementById("serialInput");
 
-  checkBtn.addEventListener("click", async () => {
-    const serial = serialInput.value.trim();
+    const resultBox = document.getElementById("warrantyResult");
+    const errorBox = document.getElementById("errorBox");
 
-    if (!serial) {
-      showResult("Please enter serial number", "error");
-      return;
-    }
+    btn.addEventListener("click", async () => {
+      const serial = serialInput.value.trim();
 
-    try {
-      const ref = doc(db, "batteries", serial);
-      const snap = await getDoc(ref);
+      resultBox.classList.add("hidden");
+      errorBox.classList.add("hidden");
 
-      if (!snap.exists()) {
-        showResult("❌ Battery not found", "error");
+      if (!serial) {
+        errorBox.textContent = "Please enter serial number";
+        errorBox.classList.remove("hidden");
         return;
       }
 
-      const data = snap.data();
+      try {
+        const data = await checkWarrantyBySerial(serial);
 
-      const today = new Date();
-      const expiry = data.warrantyExpiry.toDate();
-      const status = expiry >= today ? "ACTIVE" : "EXPIRED";
+        if (!data) {
+          errorBox.textContent = "No warranty found for this serial number";
+          errorBox.classList.remove("hidden");
+          return;
+        }
 
-      showResult(`
-        <strong>Status:</strong> ${status}<br>
-        <strong>Model:</strong> ${data.model}<br>
-        <strong>Capacity:</strong> ${data.capacity} Ah<br>
-        <strong>Vehicle:</strong> ${data.vehicleType}<br>
-        <strong>Activated On:</strong> ${data.activatedOn.toDate().toDateString()}<br>
-        <strong>Expiry Date:</strong> ${expiry.toDateString()}
-      `, status === "ACTIVE" ? "success" : "warning");
+        document.getElementById("statusText").textContent = data.status;
+        document.getElementById("resModel").textContent = data.model;
+        document.getElementById("resCustomer").textContent = data.customerName;
+        document.getElementById("resStart").textContent = data.startDate;
+        document.getElementById("resEnd").textContent = data.endDate;
+        document.getElementById("resType").textContent = data.warrantyType;
 
-    } catch (err) {
-      showResult(err.message, "error");
-    }
-  });
+        resultBox.classList.remove("hidden");
 
-  function showResult(html, type) {
-    resultBox.className = `result-box ${type}`;
-    resultBox.innerHTML = html;
-    resultBox.classList.remove("hidden");
-  }
-</script>
+      } catch (err) {
+        errorBox.textContent = "Something went wrong. Try again.";
+        errorBox.classList.remove("hidden");
+      }
+    });
+  </script>
 
 </body>
 </html>
