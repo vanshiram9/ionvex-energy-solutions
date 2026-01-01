@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dealer Dashboard | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/dealer.css" />
+
+  <!-- Firebase (DO NOT REPEAT app.js) -->
+  <script type="module">
+    import { auth } from "/js/firebase/auth.js";
+    import { db } from "/js/firebase/firestore.js";
+    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    let dealerId = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "/login.html";
+        return;
+      }
+
+      dealerId = user.uid;
+      loadDashboard();
+    });
+
+    async function loadDashboard() {
+      await loadStats();
+      await loadRecentActivations();
+    }
+
+    async function loadStats() {
+      const batteriesRef = collection(db, "batteries");
+      const q = query(batteriesRef, where("dealerId", "==", dealerId));
+
+      const snapshot = await getDocs(q);
+
+      let total = 0, active = 0, expired = 0;
+
+      snapshot.forEach(doc => {
+        total++;
+        const d = doc.data();
+        if (d.status === "active") active++;
+        if (d.status === "expired") expired++;
+      });
+
+      document.getElementById("totalBatteries").innerText = total;
+      document.getElementById("activeBatteries").innerText = active;
+      document.getElementById("expiredBatteries").innerText = expired;
+    }
+
+    async function loadRecentActivations() {
+      const list = document.getElementById("recentList");
+      list.innerHTML = "";
+
+      const q = query(
+        collection(db, "batteries"),
+        where("dealerId", "==", dealerId)
+      );
+
+      const snapshot = await getDocs(q);
+
+      snapshot.docs.slice(0, 5).forEach(doc => {
+        const d = doc.data();
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${d.serialNumber}</strong>
+          <span>${d.model}</span>
+          <small>Status: ${d.status}</small>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    window.logoutDealer = async () => {
+      await signOut(auth);
+      window.location.href = "/login.html";
+    };
+  </script>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <header class="dealer-header">
+    <h1>Ionvex Dealer Panel</h1>
+    <button onclick="logoutDealer()">Logout</button>
+  </header>
+
+  <!-- DASHBOARD -->
+  <main class="dealer-dashboard">
+
+    <!-- STATS -->
+    <section class="stats">
+      <div class="card">
+        <h3>Total Batteries</h3>
+        <p id="totalBatteries">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Active Warranty</h3>
+        <p id="activeBatteries">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Expired</h3>
+        <p id="expiredBatteries">0</p>
+      </div>
+    </section>
+
+    <!-- QUICK ACTIONS -->
+    <section class="actions">
+      <a href="activate-warranty.html">+ Activate Warranty</a>
+      <a href="sold-batteries.html">View Sold Batteries</a>
+      <a href="claims.html">Warranty Claims</a>
+    </section>
+
+    <!-- RECENT -->
+    <section class="recent">
+      <h2>Recent Activations</h2>
+      <ul id="recentList"></ul>
+    </section>
+
+  </main>
+
+</body>
+</html>
