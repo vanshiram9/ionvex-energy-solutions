@@ -1,65 +1,61 @@
 import { db } from "/js/firebase/app.js";
 import {
   collection,
-  getCountFromServer,
+  getDocs,
   query,
   where,
   orderBy,
-  limit,
-  getDocs
+  limit
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ---------- COUNTS ---------- */
 
 async function loadCounts() {
-
   // Dealers
-  const dealersSnap = await getCountFromServer(
+  const dealersSnap = await getDocs(
     query(collection(db, "users"), where("role", "==", "DEALER"))
   );
-  document.getElementById("totalDealers").innerText = dealersSnap.data().count;
+  document.getElementById("totalDealers").innerText = dealersSnap.size;
 
-  // Pending Dealers
-  const pendingSnap = await getCountFromServer(
-    query(collection(db, "dealerRequests"), where("status", "==", "PENDING"))
+  // Pending dealer requests
+  const pendingSnap = await getDocs(
+    query(collection(db, "dealer_requests"))
   );
-  document.getElementById("pendingDealers").innerText = pendingSnap.data().count;
+  document.getElementById("pendingDealers").innerText = pendingSnap.size;
 
   // Batteries
-  const batteriesSnap = await getCountFromServer(
-    collection(db, "batteries")
-  );
-  document.getElementById("totalBatteries").innerText = batteriesSnap.data().count;
+  const batteriesSnap = await getDocs(collection(db, "batteries"));
+  document.getElementById("totalBatteries").innerText = batteriesSnap.size;
 
-  // Active Warranty
-  const activeSnap = await getCountFromServer(
+  // Active warranty
+  const activeSnap = await getDocs(
     query(collection(db, "batteries"), where("status", "==", "ACTIVE"))
   );
-  document.getElementById("activeWarranties").innerText = activeSnap.data().count;
+  document.getElementById("activeWarranties").innerText = activeSnap.size;
 
   // Claims
-  const claimsSnap = await getCountFromServer(
-    collection(db, "claims")
-  );
-  document.getElementById("totalClaims").innerText = claimsSnap.data().count;
+  const claimsSnap = await getDocs(collection(db, "claims"));
+  document.getElementById("totalClaims").innerText = claimsSnap.size;
 }
 
-/* ---------- ACTIVITY LOG ---------- */
+/* ---------- ACTIVITY LOGS ---------- */
 
 async function loadActivity() {
   const list = document.getElementById("activityList");
   list.innerHTML = "";
 
-  const q = query(
-    collection(db, "activityLogs"),
-    orderBy("createdAt", "desc"),
-    limit(8)
+  const snap = await getDocs(
+    query(
+      collection(db, "activity_logs"),
+      orderBy("createdAt", "desc"),
+      limit(10)
+    )
   );
 
-  const snap = await getDocs(q);
   snap.forEach(doc => {
+    const d = doc.data();
     const li = document.createElement("li");
-    li.innerText = doc.data().message;
+    li.innerText = `${d.message} (${new Date(d.createdAt.seconds*1000).toLocaleString()})`;
     list.appendChild(li);
   });
 }
