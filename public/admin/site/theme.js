@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc } 
+import { doc, getDoc, setDoc }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from "/js/firebase/app.js";
 
@@ -9,22 +9,23 @@ async function loadTheme() {
   if (!snap.exists()) return;
 
   const d = snap.data();
-  primaryColor.value = d.primary || "#0d6efd";
-  secondaryColor.value = d.secondary || "#6c757d";
+  primaryColor.value = d.primary || "#0f172a";
+  secondaryColor.value = d.secondary || "#64748b";
+  buttonColor.value = d.button || "#2563eb";
   fontFamily.value = d.font || "Inter";
-  darkMode.checked = d.dark || false;
-  radius.value = d.radius || 6;
+  themeMode.value = d.mode || "light";
 }
 
 saveTheme.onclick = async () => {
   await setDoc(ref, {
     primary: primaryColor.value,
     secondary: secondaryColor.value,
+    button: buttonColor.value,
     font: fontFamily.value,
-    dark: darkMode.checked,
-    radius: radius.value
+    mode: themeMode.value,
+    updatedAt: new Date()
   });
-  alert("Theme applied successfully");
+  alert("Theme updated successfully");
 };
 
 loadTheme();
