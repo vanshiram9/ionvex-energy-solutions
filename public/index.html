@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ionvex Energy | EV Lithium Batteries</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="/css/main.css">
+
+  <!-- Firebase -->
+  <script type="module" src="/js/firebase/app.js"></script>
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <img src="/assets/images/logo.png" class="logo">
+    <nav>
+      <a href="/">Home</a>
+      <a href="/products.html">Products</a>
+      <a href="/warranty.html">Warranty</a>
+      <a href="/login.html" class="btn">Dealer Login</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <h1>Powering India’s Electric Vehicles</h1>
+  <p>Advanced Lithium Batteries for 2W • 3W • 4W</p>
+  <a href="/products.html" class="btn primary">Explore Products</a>
+</section>
+
+<section class="categories">
+  <div class="card">🔋 2 Wheeler Batteries</div>
+  <div class="card">🛺 3 Wheeler Batteries</div>
+  <div class="card">🚗 4 Wheeler Batteries</div>
+</section>
+
+<section class="quick-warranty">
+  <h2>Quick Warranty Check</h2>
+  <input id="serialInput" placeholder="Enter Battery Serial No">
+  <button id="checkBtn">Check Warranty</button>
+  <div id="warrantyResult"></div>
+</section>
+
+<footer>
+  <p>© 2026 Ionvex Energy | Made in India 🇮🇳</p>
+</footer>
+
+<script type="module" src="/js/home/warrantyQuickCheck.js"></script>
+</body>
+</html>
