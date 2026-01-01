@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Claim Status | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/customer.css" />
+</head>
+<body>
+
+<header class="customer-header">
+  <img src="/assets/images/logo.png" class="logo" />
+  <h2>Warranty Claim Status</h2>
+</header>
+
+<main class="customer-main">
+
+  <section class="card">
+    <h3>Enter Battery Serial</h3>
+
+    <div class="inline-form">
+      <input id="serialInput" placeholder="Battery Serial Number" />
+      <button id="checkBtn" class="btn primary">Check</button>
+    </div>
+  </section>
+
+  <section id="claimsSection" class="claims-section"></section>
+
+</main>
+
+<footer class="customer-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { db } from "/js/firebase/firestore.js";
+
+  import {
+    collection,
+    query,
+    where,
+    orderBy,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  document.getElementById("year").innerText = new Date().getFullYear();
+
+  const claimsSection = document.getElementById("claimsSection");
+
+  document.getElementById("checkBtn").addEventListener("click", async () => {
+    const serial = document.getElementById("serialInput").value.trim();
+
+    if (!serial) {
+      alert("Enter serial number");
+      return;
+    }
+
+    claimsSection.innerHTML = "Loading...";
+
+    const q = query(
+      collection(db, "claims"),
+      where("serial", "==", serial),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      claimsSection.innerHTML = "<p>No claims found.</p>";
+      return;
+    }
+
+    let html = "";
+
+    snap.forEach(doc => {
+      const c = doc.data();
+
+      html += `
+        <div class="claim-card status-${c.status}">
+          <h4>${c.problemType}</h4>
+          <p><b>Status:</b> ${c.status}</p>
+          <p><b>Date:</b> ${c.createdAt?.toDate().toLocaleDateString()}</p>
+          <p>${c.description}</p>
+
+          ${c.imageUrl ? `<img src="${c.imageUrl}" class="claim-img" />` : ""}
+
+          ${c.adminRemark ? `<p class="remark">Admin: ${c.adminRemark}</p>` : ""}
+        </div>
+      `;
+    });
+
+    claimsSection.innerHTML = html;
+  });
+</script>
+
+</body>
+</html>
