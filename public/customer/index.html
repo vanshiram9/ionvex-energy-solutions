@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customer Portal | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/customer.css" />
+</head>
+<body>
+
+<header class="customer-header">
+  <img src="/assets/images/logo.png" alt="Ionvex Energy" class="logo" />
+  <h2>Customer Warranty Portal</h2>
+</header>
+
+<main class="customer-main">
+
+  <section class="card">
+    <h3>Check Battery Status</h3>
+    <p>Enter your battery serial number to view warranty & health.</p>
+
+    <input type="text" id="serialInput" placeholder="Battery Serial Number" />
+    <button id="checkBtn">Check Status</button>
+
+    <p class="hint">Tip: You can also scan QR code printed on battery</p>
+  </section>
+
+  <section class="card secondary">
+    <h3>Warranty Services</h3>
+    <ul>
+      <li>✔ View warranty validity</li>
+      <li>✔ Download warranty card</li>
+      <li>✔ Raise warranty claim</li>
+      <li>✔ Track claim status</li>
+    </ul>
+  </section>
+
+</main>
+
+<footer class="customer-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { db } from "/js/firebase/firestore.js";
+  import {
+    collection,
+    query,
+    where,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  document.getElementById("year").innerText = new Date().getFullYear();
+
+  const btn = document.getElementById("checkBtn");
+  const input = document.getElementById("serialInput");
+
+  btn.addEventListener("click", async () => {
+    const serial = input.value.trim();
+
+    if (!serial) {
+      alert("Please enter battery serial number");
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Checking...";
+
+    try {
+      const q = query(
+        collection(db, "batteries"),
+        where("serial", "==", serial)
+      );
+
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        alert("Battery not found. Please check serial number.");
+      } else {
+        // Redirect to battery detail page
+        window.location.href = `/public/customer/battery.html?serial=${serial}`;
+      }
+
+    } catch (err) {
+      alert("Error: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = "Check Status";
+    }
+  });
+</script>
+
+</body>
+</html>
