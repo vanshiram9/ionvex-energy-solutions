@@ -10,7 +10,6 @@
 </head>
 <body>
 
-<!-- 🔐 AUTH -->
 <script type="module" src="/public/admin/auth/auth-guard.js"></script>
 
 <div id="header"></div>
@@ -20,9 +19,7 @@
 
   <h1>Theme Settings</h1>
 
-  <!-- COLORS -->
-  <section class="card">
-    <h3>Brand Colors</h3>
+  <section class="card form-grid">
 
     <label>Primary Color</label>
     <input type="color" id="primaryColor">
@@ -30,44 +27,36 @@
     <label>Secondary Color</label>
     <input type="color" id="secondaryColor">
 
-    <button id="saveColors" class="primary">Save Colors</button>
-  </section>
+    <label>Button Color</label>
+    <input type="color" id="buttonColor">
 
-  <!-- FONT -->
-  <section class="card">
-    <h3>Font Family</h3>
+    <label>Font Family</label>
     <select id="fontFamily">
       <option value="Inter">Inter</option>
       <option value="Poppins">Poppins</option>
       <option value="Roboto">Roboto</option>
-      <option value="Montserrat">Montserrat</option>
     </select>
 
-    <button id="saveFont">Save Font</button>
-  </section>
+    <label>Theme Mode</label>
+    <select id="themeMode">
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
 
-  <!-- MODE -->
-  <section class="card">
-    <h3>Appearance</h3>
-    <label>
-      <input type="checkbox" id="darkMode"> Enable Dark Mode
-    </label>
-  </section>
+    <button id="saveTheme" class="primary">Save Theme</button>
 
-  <!-- UI STYLE -->
-  <section class="card">
-    <h3>UI Style</h3>
-    <label>Button Radius</label>
-    <input type="range" id="radius" min="0" max="20">
   </section>
-
-  <button id="saveTheme" class="success">Apply Theme</button>
 
 </main>
 
 <script>
-fetch("/public/admin/layout/header.html").then(r=>r.text()).then(t=>header.innerHTML=t);
-fetch("/public/admin/layout/sidebar.html").then(r=>r.text()).then(t=>sidebar.innerHTML=t);
+fetch("/public/admin/layout/header.html")
+  .then(r => r.text())
+  .then(t => header.innerHTML = t);
+
+fetch("/public/admin/layout/sidebar.html")
+  .then(r => r.text())
+  .then(t => sidebar.innerHTML = t);
 </script>
 
 <script type="module" src="/public/admin/site/theme.js"></script>
