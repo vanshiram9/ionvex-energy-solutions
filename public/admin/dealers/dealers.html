@@ -1,35 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Dealers | Admin</title>
+  <meta charset="UTF-8">
+  <title>Dealers | Ionvex Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="/css/main.css" />
-  <link rel="stylesheet" href="/public/admin/layout/layout.css" />
-
-  <script type="module" src="/public/admin/auth/auth-guard.js"></script>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/public/admin/layout/layout.css">
 </head>
 <body>
+
+<!-- 🔐 AUTH -->
+<script type="module" src="/public/admin/auth/auth-guard.js"></script>
 
 <div id="header"></div>
 <div id="sidebar"></div>
 
 <main class="admin-main">
-  <h1>Authorized Dealers</h1>
+  <h1>Approved Dealers</h1>
 
   <table class="admin-table">
     <thead>
       <tr>
         <th>Dealer Name</th>
-        <th>Phone</th>
         <th>Email</th>
+        <th>Phone</th>
         <th>City</th>
         <th>Status</th>
-        <th>Joined</th>
         <th>Action</th>
       </tr>
     </thead>
-    <tbody id="dealerTable"></tbody>
+
+    <tbody id="dealersTable"></tbody>
   </table>
 </main>
 
