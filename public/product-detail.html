@@ -5,7 +5,7 @@
   <title>Product Details | Ionvex Energy Solutions</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Detailed specifications, features and warranty information of Ionvex lithium battery products." />
+  <meta name="description" content="Ionvex lithium battery product details, specifications and warranty information." />
 
   <!-- GLOBAL CSS -->
   <link rel="stylesheet" href="../css/main.css" />
@@ -23,7 +23,7 @@
 
   <nav class="nav-links">
     <a href="index.html">Home</a>
-    <a href="products.html">Products</a>
+    <a href="products.html" class="active">Products</a>
     <a href="warranty.html">Warranty</a>
     <a href="login.html">Login</a>
   </nav>
@@ -32,61 +32,111 @@
 <!-- ================= PRODUCT DETAIL ================= -->
 <main class="product-detail-container">
 
-  <!-- LEFT : IMAGE -->
-  <section class="product-images">
-    <img id="productImage" src="../assets/images/batteries/2w/battery-60ah.png" alt="Product Image" />
-  </section>
+  <div class="product-image">
+    <img id="productImage" src="" alt="Battery Image" />
+  </div>
 
-  <!-- RIGHT : INFO -->
-  <section class="product-info">
-    <h1 id="productName">Ionvex Battery</h1>
-    <p id="productDesc">
-      High-performance lithium battery engineered for durability, safety and long life.
-    </p>
+  <div class="product-info">
+    <h1 id="productName"></h1>
 
-    <div class="product-highlights">
-      <span>🔋 <strong id="capacity">—</strong> Ah</span>
-      <span>⚡ Fast Charging</span>
-      <span>🛡 <strong id="warranty">—</strong> Years Warranty</span>
-    </div>
+    <p id="productDesc" class="product-desc"></p>
 
-    <!-- SPEC TABLE -->
-    <table class="spec-table">
-      <tr>
-        <th>Nominal Voltage</th>
-        <td id="voltage">—</td>
-      </tr>
-      <tr>
-        <th>Battery Chemistry</th>
-        <td>Lithium-ion (LFP)</td>
-      </tr>
-      <tr>
-        <th>Cycle Life</th>
-        <td id="cycles">—</td>
-      </tr>
-      <tr>
-        <th>Operating Temp</th>
-        <td>-10°C to 55°C</td>
-      </tr>
-      <tr>
-        <th>BMS</th>
-        <td>Smart BMS with protection</td>
-      </tr>
-    </table>
+    <ul class="spec-list">
+      <li><strong>Category:</strong> <span id="productCategory"></span></li>
+      <li><strong>Voltage:</strong> <span id="productVoltage"></span></li>
+      <li><strong>Capacity:</strong> <span id="productCapacity"></span></li>
+      <li><strong>Range:</strong> <span id="productRange"></span></li>
+      <li><strong>Charging Time:</strong> <span id="productCharge"></span></li>
+      <li><strong>Warranty:</strong> <span id="productWarranty"></span></li>
+    </ul>
 
-    <!-- CTA -->
     <div class="product-actions">
-      <a href="dealer-register.html" class="btn-primary">Become Dealer</a>
-      <a href="warranty.html" class="btn-secondary">Check Warranty</a>
+      <a href="warranty.html" class="btn-primary">Check Warranty</a>
+      <a href="dealer-register.html" class="btn-secondary">Become Dealer</a>
     </div>
-  </section>
+  </div>
 
 </main>
 
-<!-- ================= EXTRA INFO ================= -->
-<section class="product-extra">
-  <h2>Why Choose Ionvex?</h2>
-  <ul>
-    <li>✔ Automotive-grade cells</li>
-    <li>✔ Over-charge / over-discharge protection</li>
-    <li>✔ Thermal &
+<!-- ================= FOOTER ================= -->
+<footer class="main-footer">
+  <p>© 2026 Ionvex Energy Solutions. All Rights Reserved.</p>
+</footer>
+
+<!-- ================= HYBRID JS ================= -->
+<script>
+/**
+ * TEMP PRODUCT DATABASE
+ * Later auto-load from Firestore (admin controlled)
+ */
+const PRODUCT_DB = {
+  "P-2W-60": {
+    name: "Ionvex 2W Lithium Battery 60Ah",
+    category: "2 Wheeler",
+    voltage: "48V",
+    capacity: "60Ah",
+    range: "90 km",
+    charge: "3-4 Hours",
+    warranty: "3 Years",
+    image: "../assets/images/batteries/2w/48v-60ah.png",
+    desc: "Designed for electric scooters. Lightweight, fast charging and long cycle life with smart BMS."
+  },
+  "P-2W-100": {
+    name: "Ionvex 2W Lithium Battery 100Ah",
+    category: "2 Wheeler",
+    voltage: "48V",
+    capacity: "100Ah",
+    range: "130 km",
+    charge: "4-5 Hours",
+    warranty: "3 Years",
+    image: "../assets/images/batteries/2w/48v-100ah.png",
+    desc: "High capacity lithium battery for extended range electric two-wheelers."
+  },
+  "P-3W-120": {
+    name: "Ionvex 3W Lithium Battery 120Ah",
+    category: "3 Wheeler",
+    voltage: "48V",
+    capacity: "120Ah",
+    range: "160 km",
+    charge: "5 Hours",
+    warranty: "4 Years",
+    image: "../assets/images/batteries/3w/48v-120ah.png",
+    desc: "Commercial grade battery designed for electric rickshaws with high durability."
+  },
+  "P-4W-200": {
+    name: "Ionvex 4W Lithium Battery 200Ah",
+    category: "4 Wheeler",
+    voltage: "72V",
+    capacity: "200Ah",
+    range: "300 km",
+    charge: "6-7 Hours",
+    warranty: "5 Years",
+    image: "../assets/images/batteries/4w/72v-200ah.png",
+    desc: "Premium lithium battery pack for electric cars and fleet vehicles."
+  }
+};
+
+// GET PRODUCT ID FROM URL
+const params = new URLSearchParams(window.location.search);
+const productId = params.get("id");
+
+if (!productId || !PRODUCT_DB[productId]) {
+  document.querySelector(".product-detail-container").innerHTML =
+    "<p class='error'>Product not found.</p>";
+} else {
+  const p = PRODUCT_DB[productId];
+
+  document.getElementById("productName").innerText = p.name;
+  document.getElementById("productCategory").innerText = p.category;
+  document.getElementById("productVoltage").innerText = p.voltage;
+  document.getElementById("productCapacity").innerText = p.capacity;
+  document.getElementById("productRange").innerText = p.range;
+  document.getElementById("productCharge").innerText = p.charge;
+  document.getElementById("productWarranty").innerText = p.warranty;
+  document.getElementById("productImage").src = p.image;
+  document.getElementById("productDesc").innerText = p.desc;
+}
+</script>
+
+</body>
+  </html>
