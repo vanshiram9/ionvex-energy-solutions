@@ -5,136 +5,74 @@
   <title>Products | Ionvex Energy Solutions</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Explore Ionvex lithium battery solutions for 2W, 3W & 4W electric vehicles." />
+  <meta name="description" content="Explore Ionvex Energy lithium battery products for 2W, 3W and 4W electric vehicles." />
 
   <!-- GLOBAL CSS -->
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/customer.css" />
+  <link rel="stylesheet" href="/css/main.css" />
 
-  <link rel="icon" href="../assets/images/logo.png" />
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
-<header class="main-header">
-  <div class="logo">
-    <img src="../assets/images/logo.png" alt="Ionvex Energy Solutions" />
-  </div>
+  <!-- ================= HEADER ================= -->
+  <header class="main-header">
+    <div class="logo">
+      <img src="/assets/images/logo.png" alt="Ionvex Energy" />
+      <span>Ionvex Energy</span>
+    </div>
 
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="products.html" class="active">Products</a>
-    <a href="warranty.html">Warranty</a>
-    <a href="login.html">Login</a>
-  </nav>
-</header>
+    <nav class="main-nav">
+      <a href="/public/index.html">Home</a>
+      <a href="/public/products.html" class="active">Products</a>
+      <a href="/public/warranty.html">Warranty</a>
+      <a href="/public/login.html">Login</a>
+    </nav>
+  </header>
 
-<!-- ================= PAGE TITLE ================= -->
-<section class="page-header">
-  <h1>Our Battery Products</h1>
-  <p>Advanced lithium battery solutions for every electric vehicle segment</p>
-</section>
+  <!-- ================= PAGE TITLE ================= -->
+  <section class="page-header">
+    <h1>Our Battery Products</h1>
+    <p>Reliable • Smart • Long-Lasting Lithium Battery Solutions</p>
+  </section>
 
-<!-- ================= FILTER BAR ================= -->
-<section class="filter-bar">
-  <button data-filter="ALL" class="filter-btn active">All</button>
-  <button data-filter="2W" class="filter-btn">2 Wheeler</button>
-  <button data-filter="3W" class="filter-btn">3 Wheeler</button>
-  <button data-filter="4W" class="filter-btn">4 Wheeler</button>
-</section>
+  <!-- ================= FILTER BAR ================= -->
+  <section class="product-filters">
+    <select id="vehicleFilter">
+      <option value="all">All Vehicles</option>
+      <option value="2w">2 Wheeler</option>
+      <option value="3w">3 Wheeler</option>
+      <option value="4w">4 Wheeler</option>
+    </select>
 
-<!-- ================= PRODUCTS GRID ================= -->
-<main class="products-container" id="productsContainer">
-  <!-- Products injected by JS -->
-</main>
+    <select id="capacityFilter">
+      <option value="all">All Capacities</option>
+      <option value="low">Below 2 kWh</option>
+      <option value="mid">2–5 kWh</option>
+      <option value="high">Above 5 kWh</option>
+    </select>
+  </section>
 
-<!-- ================= FOOTER ================= -->
-<footer class="main-footer">
-  <p>© 2026 Ionvex Energy Solutions. All Rights Reserved.</p>
-</footer>
+  <!-- ================= PRODUCTS GRID ================= -->
+  <section class="products-grid" id="productsGrid">
+    <!-- Dynamic product cards injected by JS -->
+  </section>
 
-<!-- ================= JS (HYBRID) ================= -->
-<script>
-/**
- * TEMP PRODUCT DATA
- * Later connect with Firestore (admin-controlled)
- */
-const PRODUCTS = [
-  {
-    id: "P-2W-60",
-    category: "2W",
-    name: "Ionvex 2W 60Ah",
-    voltage: "48V",
-    range: "90 km",
-    warranty: "3 Years",
-    image: "../assets/images/batteries/2w/48v-60ah.png"
-  },
-  {
-    id: "P-2W-100",
-    category: "2W",
-    name: "Ionvex 2W 100Ah",
-    voltage: "48V",
-    range: "130 km",
-    warranty: "3 Years",
-    image: "../assets/images/batteries/2w/48v-100ah.png"
-  },
-  {
-    id: "P-3W-120",
-    category: "3W",
-    name: "Ionvex 3W 120Ah",
-    voltage: "48V",
-    range: "160 km",
-    warranty: "4 Years",
-    image: "../assets/images/batteries/3w/48v-120ah.png"
-  },
-  {
-    id: "P-4W-200",
-    category: "4W",
-    name: "Ionvex 4W 200Ah",
-    voltage: "72V",
-    range: "300 km",
-    warranty: "5 Years",
-    image: "../assets/images/batteries/4w/72v-200ah.png"
-  }
-];
+  <!-- ================= FOOTER ================= -->
+  <footer class="main-footer">
+    <p>© <span id="year"></span> Ionvex Energy Solutions. All rights reserved.</p>
+  </footer>
 
-const container = document.getElementById("productsContainer");
-const filterBtns = document.querySelectorAll(".filter-btn");
+  <!-- ================= JS ================= -->
+  <script type="module">
+    import { loadProducts } from "/js/home/home.js";
 
-function renderProducts(filter = "ALL") {
-  container.innerHTML = "";
+    document.getElementById("year").textContent = new Date().getFullYear();
 
-  const filtered = filter === "ALL"
-    ? PRODUCTS
-    : PRODUCTS.filter(p => p.category === filter);
+    loadProducts({
+      gridId: "productsGrid",
+      vehicleFilterId: "vehicleFilter",
+      capacityFilterId: "capacityFilter"
+    });
+  </script>
 
-  if (filtered.length === 0) {
-    container.innerHTML = `<p class="empty">No products found.</p>`;
-    return;
-  }
-
-  filtered.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "product-card";
-
-    card.innerHTML = `
-      <img src="${p.image}" alt="${p.name}" />
-      <h3>${p.name}</h3>
-      <p><strong>Voltage:</strong> ${p.voltage}</p>
-      <p><strong>Range:</strong> ${p.range}</p>
-      <p><strong>Warranty:</strong> ${p.warranty}</p>
-      <a href="product-detail.html?id=${p.id}" class="btn-secondary">
-        View Details
-      </a>
-    `;
-
-    container.appendChild(card);
-  });
-}
-
-// FILTER HANDLING
-filterBtns.forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelector(".filter-btn.active").classList.remove("active");
-    btn.classList.add("active");
-    renderProducts
+</body>
+</html>
