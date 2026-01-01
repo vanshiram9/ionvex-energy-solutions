@@ -5,9 +5,9 @@
   <title>Warranty Check | Ionvex Energy Solutions</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Check warranty status of Ionvex lithium batteries using serial number." />
+  <meta name="description" content="Check lithium battery warranty status online using serial or QR code" />
 
-  <!-- GLOBAL CSS -->
+  <!-- CSS -->
   <link rel="stylesheet" href="../css/main.css" />
   <link rel="stylesheet" href="../css/customer.css" />
 
@@ -24,7 +24,6 @@
   <nav class="nav-links">
     <a href="index.html">Home</a>
     <a href="products.html">Products</a>
-    <a href="warranty.html" class="active">Warranty</a>
     <a href="login.html">Login</a>
   </nav>
 </header>
@@ -33,96 +32,86 @@
 <main class="warranty-container">
 
   <h1>Warranty Status Check</h1>
-  <p>Enter your battery serial number to check warranty details.</p>
+  <p>Enter Battery Serial Number or scan QR code</p>
 
-  <div class="warranty-form">
+  <div class="warranty-card">
+
     <input
       type="text"
       id="serialInput"
       placeholder="Enter Battery Serial Number"
-      autocomplete="off"
     />
-    <button id="checkBtn" class="btn-primary">Check Warranty</button>
-  </div>
 
-  <!-- RESULT BOX -->
-  <div id="warrantyResult" class="warranty-result hidden"></div>
+    <button id="checkBtn" class="btn-primary">
+      Check Warranty
+    </button>
+
+    <div id="resultBox" class="result-box hidden"></div>
+
+  </div>
 
 </main>
 
-<!-- ================= INFO ================= -->
-<section class="warranty-info">
-  <h2>Ionvex Warranty Policy</h2>
-  <ul>
-    <li>✔ Warranty starts from activation date by authorized dealer</li>
-    <li>✔ Covers manufacturing defects only</li>
-    <li>✔ Physical damage & misuse not covered</li>
-    <li>✔ Smart BMS logs checked during claims</li>
-  </ul>
-</section>
-
 <!-- ================= FOOTER ================= -->
 <footer class="main-footer">
-  <p>© 2026 Ionvex Energy Solutions. All Rights Reserved.</p>
+  <p>© 2026 Ionvex Energy Solutions</p>
 </footer>
 
-<!-- ================= JS (HYBRID) ================= -->
-<script>
-  /**
-   * TEMP MOCK DATA
-   * Later: replace with Firestore read
-   */
-  const WARRANTY_DB = {
-    "IONVEX-2W-001": {
-      product: "Ionvex 2W 60Ah",
-      activatedOn: "2025-01-12",
-      warrantyYears: 3,
-      status: "ACTIVE"
-    },
-    "IONVEX-3W-010": {
-      product: "Ionvex 3W 100Ah",
-      activatedOn: "2024-05-20",
-      warrantyYears: 4,
-      status: "EXPIRED"
-    }
-  };
+<!-- ================= HYBRID WARRANTY JS ================= -->
+<script type="module">
+  import { getFirestore, doc, getDoc } from
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const input = document.getElementById("serialInput");
-  const btn = document.getElementById("checkBtn");
-  const resultBox = document.getElementById("warrantyResult");
+  import { app } from "../js/firebase/app.js";
 
-  btn.addEventListener("click", () => {
-    const serial = input.value.trim().toUpperCase();
-    resultBox.classList.remove("hidden");
+  const db = getFirestore(app);
+
+  const serialInput = document.getElementById("serialInput");
+  const checkBtn = document.getElementById("checkBtn");
+  const resultBox = document.getElementById("resultBox");
+
+  checkBtn.addEventListener("click", async () => {
+    const serial = serialInput.value.trim();
 
     if (!serial) {
-      resultBox.innerHTML = `<p class="error">Please enter a serial number.</p>`;
+      showResult("Please enter serial number", "error");
       return;
     }
 
-    const data = WARRANTY_DB[serial];
+    try {
+      const ref = doc(db, "batteries", serial);
+      const snap = await getDoc(ref);
 
-    if (!data) {
-      resultBox.innerHTML = `
-        <p class="error">❌ Serial number not found.</p>
-        <p>Please contact your dealer or support.</p>
-      `;
-      return;
+      if (!snap.exists()) {
+        showResult("❌ Battery not found", "error");
+        return;
+      }
+
+      const data = snap.data();
+
+      const today = new Date();
+      const expiry = data.warrantyExpiry.toDate();
+      const status = expiry >= today ? "ACTIVE" : "EXPIRED";
+
+      showResult(`
+        <strong>Status:</strong> ${status}<br>
+        <strong>Model:</strong> ${data.model}<br>
+        <strong>Capacity:</strong> ${data.capacity} Ah<br>
+        <strong>Vehicle:</strong> ${data.vehicleType}<br>
+        <strong>Activated On:</strong> ${data.activatedOn.toDate().toDateString()}<br>
+        <strong>Expiry Date:</strong> ${expiry.toDateString()}
+      `, status === "ACTIVE" ? "success" : "warning");
+
+    } catch (err) {
+      showResult(err.message, "error");
     }
-
-    resultBox.innerHTML = `
-      <h3>Warranty Details</h3>
-      <p><strong>Product:</strong> ${data.product}</p>
-      <p><strong>Activated On:</strong> ${data.activatedOn}</p>
-      <p><strong>Warranty:</strong> ${data.warrantyYears} Years</p>
-      <p>
-        <strong>Status:</strong>
-        <span class="${data.status === "ACTIVE" ? "success" : "error"}">
-          ${data.status}
-        </span>
-      </p>
-    `;
   });
+
+  function showResult(html, type) {
+    resultBox.className = `result-box ${type}`;
+    resultBox.innerHTML = html;
+    resultBox.classList.remove("hidden");
+  }
 </script>
 
 </body>
