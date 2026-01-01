@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Customer Dashboard | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/customer.css" />
+</head>
+<body>
+
+<header class="customer-header">
+  <img src="/assets/images/logo.png" class="logo" alt="Ionvex Energy" />
+  <h2>Customer Dashboard</h2>
+</header>
+
+<main class="customer-main">
+
+  <!-- SUMMARY CARDS -->
+  <section class="dashboard-cards">
+
+    <div class="card">
+      <h3>Total Batteries</h3>
+      <span id="totalBatteries">0</span>
+    </div>
+
+    <div class="card">
+      <h3>Active Warranty</h3>
+      <span id="activeWarranty">0</span>
+    </div>
+
+    <div class="card">
+      <h3>Pending Claims</h3>
+      <span id="pendingClaims">0</span>
+    </div>
+
+    <div class="card">
+      <h3>Warranty Expiring</h3>
+      <span id="expiringSoon">0</span>
+    </div>
+
+  </section>
+
+  <!-- RECENT BATTERIES -->
+  <section class="card">
+    <h3>My Batteries</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Serial</th>
+          <th>Model</th>
+          <th>Warranty</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="batteryTable"></tbody>
+    </table>
+  </section>
+
+  <!-- QUICK ACTIONS -->
+  <section class="quick-actions">
+    <a href="/public/customer/warranty.html" class="btn">View Warranty</a>
+    <a href="/public/customer/track-claim.html" class="btn secondary">Track Claim</a>
+  </section>
+
+</main>
+
+<footer class="customer-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { auth } from "/js/firebase/auth.js";
+  import { db } from "/js/firebase/firestore.js";
+  import {
+    collection,
+    query,
+    where,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  document.getElementById("year").innerText = new Date().getFullYear();
+
+  auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+      window.location.href = "/public/login.html";
+      return;
+    }
+
+    loadDashboard(user.uid);
+  });
+
+  async function loadDashboard(uid) {
+    /* ---------- BATTERIES ---------- */
+    const batQ = query(
+      collection(db, "batteries"),
+      where("customerId", "==", uid)
+    );
+    const batSnap = await getDocs(batQ);
+
+    document.getElementById("totalBatteries").innerText = batSnap.size;
+
+    let active = 0;
+    let expiring = 0;
+    const today = new Date();
+
+    const table = document.getElementById("batteryTable");
+    table.innerHTML = "";
+
+    batSnap.forEach(doc => {
+      const b = doc.data();
+
+      if (b.warrantyStatus === "ACTIVE") active++;
+
+      if (b.warrantyEnd) {
+        const end = b.warrantyEnd.toDate();
+        const diff = (end - today) / (1000 * 60 * 60 * 24);
+        if (diff < 30 && diff > 0) expiring++;
+      }
+
+      table.innerHTML += `
+        <tr>
+          <td>${b.serial}</td>
+          <td>${b.model || "-"}</td>
+          <td>${b.warrantyStatus}</td>
+          <td>${b.status}</td>
+        </tr>
+      `;
+    });
+
+    document.getElementById("activeWarranty").innerText = active;
+    document.getElementById("expiringSoon").innerText = expiring;
+
+    /* ---------- CLAIMS ---------- */
+    const claimQ = query(
+      collection(db, "claims"),
+      where("customerId", "==", uid),
+      where("status", "==", "pending")
+    );
+
+    const claimSnap = await getDocs(claimQ);
+    document.getElementById("pendingClaims").innerText = claimSnap.size;
+  }
+</script>
+
+</body>
+</html>
