@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Product | Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/public/admin/layout/layout.css">
+  <link rel="stylesheet" href="/public/admin/admin.css">
+</head>
+<body>
+
+<!-- 🔐 AUTH GUARD -->
+<script type="module" src="/public/admin/auth/auth-guard.js"></script>
+
+<!-- HEADER + SIDEBAR -->
+<div id="header"></div>
+<div id="sidebar"></div>
+
+<!-- ================= MAIN ================= -->
+<main class="admin-main">
+
+  <h1>Edit Product</h1>
+
+  <!-- PRODUCT ID (HIDDEN) -->
+  <input type="hidden" id="productId">
+
+  <form id="editProductForm" class="admin-form">
+
+    <div class="form-group">
+      <label>Product Name</label>
+      <input type="text" id="productName" required>
+    </div>
+
+    <div class="form-group">
+      <label>Product Category</label>
+      <select id="productCategory" required></select>
+    </div>
+
+    <div class="form-group">
+      <label>Battery Type</label>
+      <select id="batteryType">
+        <option value="Lithium-ion">Lithium-ion</option>
+        <option value="Lead Acid">Lead Acid</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Capacity (Ah)</label>
+      <input type="number" id="capacity" required>
+    </div>
+
+    <div class="form-group">
+      <label>Voltage (V)</label>
+      <input type="number" id="voltage" required>
+    </div>
+
+    <div class="form-group">
+      <label>Warranty (Months)</label>
+      <input type="number" id="warrantyMonths" required>
+    </div>
+
+    <div class="form-group">
+      <label>MRP (₹)</label>
+      <input type="number" id="mrp" required>
+    </div>
+
+    <div class="form-group">
+      <label>Status</label>
+      <select id="status">
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Update Product</button>
+      <button type="button" id="deleteProduct" class="btn-danger">
+        Delete Product
+      </button>
+    </div>
+
+  </form>
+
+</main>
+
+<!-- LOAD HEADER / SIDEBAR -->
+<script>
+fetch("/public/admin/layout/header.html")
+  .then(r => r.text())
+  .then(t => document.getElementById("header").innerHTML = t);
+
+fetch("/public/admin/layout/sidebar.html")
+  .then(r => r.text())
+  .then(t => document.getElementById("sidebar").innerHTML = t);
+</script>
+
+<!-- PRODUCT JS -->
+<script type="module" src="/public/admin/products/products.js"></script>
+
+</body>
+</html>
