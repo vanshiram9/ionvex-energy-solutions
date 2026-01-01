@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Product | Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/public/admin/layout/layout.css">
+  <link rel="stylesheet" href="/public/admin/admin.css">
+</head>
+<body>
+
+<!-- 🔐 AUTH GUARD -->
+<script type="module" src="/public/admin/auth/auth-guard.js"></script>
+
+<!-- HEADER + SIDEBAR -->
+<div id="header"></div>
+<div id="sidebar"></div>
+
+<!-- ================= MAIN ================= -->
+<main class="admin-main">
+
+  <h1>Add New Product</h1>
+
+  <form id="productForm" class="admin-form">
+
+    <div class="form-group">
+      <label>Product Name</label>
+      <input type="text" id="productName" required>
+    </div>
+
+    <div class="form-group">
+      <label>Product Category</label>
+      <select id="productCategory" required>
+        <option value="">Select Category</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Battery Type</label>
+      <select id="batteryType" required>
+        <option value="Lith
