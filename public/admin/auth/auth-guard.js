@@ -2,9 +2,9 @@ import { auth, db } from "/js/firebase/app.js";
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 import {
-  doc,
-  getDoc
+  doc, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 onAuthStateChanged(auth, async (user) => {
@@ -13,11 +13,18 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  const snap = await getDoc(doc(db, "users", user.uid));
+  const userRef = doc(db, "users", user.uid);
+  const snap = await getDoc(userRef);
 
-  if (!snap.exists() || snap.data().role !== "ADMIN") {
-    alert("Access Denied");
-    await auth.signOut();
+  if (!snap.exists()) {
     window.location.href = "/public/admin/auth/login.html";
+    return;
+  }
+
+  const role = snap.data().role;
+
+  if (role !== "ADMIN") {
+    alert("Access Denied");
+    window.location.href = "/";
   }
 });
