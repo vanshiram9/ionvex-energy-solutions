@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Warranty Card | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/customer.css" />
+</head>
+<body>
+
+<header class="customer-header">
+  <img src="/assets/images/logo.png" class="logo" />
+  <h2>Warranty Card</h2>
+</header>
+
+<main class="customer-main">
+
+  <!-- INPUT -->
+  <section class="card">
+    <label for="serialInput"><strong>Battery Serial Number</strong></label>
+    <input id="serialInput" placeholder="Enter Serial Number" />
+    <button id="checkBtn" class="btn primary">Check Warranty</button>
+  </section>
+
+  <!-- WARRANTY CARD -->
+  <section id="warrantyCard" class="card hidden">
+
+    <div class="card-header">
+      <h3>Ionvex Battery Warranty</h3>
+      <span id="statusBadge" class="badge"></span>
+    </div>
+
+    <div class="info-grid">
+      <div><strong>Serial No:</strong> <span id="wSerial"></span></div>
+      <div><strong>Model:</strong> <span id="wModel"></span></div>
+      <div><strong>Vehicle Type:</strong> <span id="wVehicle"></span></div>
+      <div><strong>Warranty Start:</strong> <span id="wStart"></span></div>
+      <div><strong>Warranty End:</strong> <span id="wEnd"></span></div>
+      <div><strong>Activated By:</strong> <span id="wDealer"></span></div>
+    </div>
+
+    <div class="actions">
+      <button onclick="window.print()" class="btn secondary">Print</button>
+      <a id="claimLink" class="btn">Raise Claim</a>
+    </div>
+
+  </section>
+
+</main>
+
+<footer class="customer-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { db } from "/js/firebase/firestore.js";
+  import {
+    doc,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  document.getElementById("year").innerText = new Date().getFullYear();
+
+  const btn = document.getElementById("checkBtn");
+
+  btn.addEventListener("click", async () => {
+    const serial = document.getElementById("serialInput").value.trim();
+    if (!serial) return alert("Enter serial number");
+
+    const ref = doc(db, "batteries", serial);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      alert("Warranty not found");
+      return;
+    }
+
+    const b = snap.data();
+
+    document.getElementById("warrantyCard").classList.remove("hidden");
+
+    document.getElementById("wSerial").innerText = serial;
+    document.getElementById("wModel").innerText = b.model || "-";
+    document.getElementById("wVehicle").innerText = b.vehicleType || "-";
+
+    const start = b.warrantyStart?.toDate();
+    const end = b.warrantyEnd?.toDate();
+
+    document.getElementById("wStart").innerText =
+      start ? start.toDateString() : "-";
+    document.getElementById("wEnd").innerText =
+      end ? end.toDateString() : "-";
+
+    document.getElementById("wDealer").innerText =
+      b.activatedByName || "Authorized Dealer";
+
+    const badge = document.getElementById("statusBadge");
+
+    if (b.status === "ACTIVE") {
+      badge.innerText = "ACTIVE";
+      badge.className = "badge success";
+      document.getElementById("claimLink").href =
+        `/public/customer/raise-claim.html?serial=${serial}`;
+    } else {
+      badge.innerText = "EXPIRED";
+      badge.className = "badge danger";
+      document.getElementById("claimLink").style.display = "none";
+    }
+  });
+</script>
+
+</body>
+</html>
