@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Track Claim | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/customer.css" />
+</head>
+<body>
+
+<header class="customer-header">
+  <img src="/assets/images/logo.png" class="logo" alt="Ionvex Energy" />
+  <h2>Track Warranty Claim</h2>
+</header>
+
+<main class="customer-main">
+
+  <section class="card status-card">
+    <h3>Claim Status</h3>
+
+    <div id="claimInfo" class="hidden">
+      <p><strong>Battery Serial:</strong> <span id="serial"></span></p>
+      <p><strong>Issue:</strong> <span id="issue"></span></p>
+      <p><strong>Description:</strong> <span id="desc"></span></p>
+      <p><strong>Status:</strong> 
+        <span id="status" class="status-badge"></span>
+      </p>
+      <p><strong>Last Update:</strong> <span id="updated"></span></p>
+
+      <div id="adminRemarkBox" class="hidden">
+        <p><strong>Admin Remark:</strong></p>
+        <p id="adminRemark"></p>
+      </div>
+    </div>
+
+    <div id="loading">Loading claim details...</div>
+    <div id="notFound" class="error hidden">No claim found for this serial.</div>
+  </section>
+
+</main>
+
+<footer class="customer-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= JS ================= -->
+<script type="module">
+  import { db } from "/js/firebase/firestore.js";
+  import {
+    collection,
+    query,
+    where,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  document.getElementById("year").innerText = new Date().getFullYear();
+
+  const params = new URLSearchParams(window.location.search);
+  const serialParam = params.get("serial");
+
+  if (!serialParam) {
+    alert("Invalid access");
+    window.location.href = "/public/index.html";
+  }
+
+  const loading = document.getElementById("loading");
+  const notFound = document.getElementById("notFound");
+  const info = document.getElementById("claimInfo");
+
+  async function loadClaim() {
+    try {
+      const q = query(
+        collection(db, "claims"),
+        where("serial", "==", serialParam)
+      );
+
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        loading.classList.add("hidden");
+        notFound.classList.remove("hidden");
+        return;
+      }
+
+      const data = snap.docs[0].data();
+
+      document.getElementById("serial").innerText = data.serial;
+      document.getElementById("issue").innerText = data.issueType;
+      document.getElementById("desc").innerText = data.description;
+
+      const statusEl = document.getElementById("status");
+      statusEl.innerText = data.status.toUpperCase();
+      statusEl.classList.add(`status-${data.status}`);
+
+      if (data.updatedAt) {
+        document.getElementById("updated").innerText =
+          data.updatedAt.toDate().toLocaleString();
+      }
+
+      if (data.adminRemark) {
+        document.getElementById("adminRemarkBox").classList.remove("hidden");
+        document.getElementById("adminRemark").innerText = data.adminRemark;
+      }
+
+      loading.classList.add("hidden");
+      info.classList.remove("hidden");
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load claim");
+    }
+  }
+
+  loadClaim();
+</script>
+
+</body>
+</html>
