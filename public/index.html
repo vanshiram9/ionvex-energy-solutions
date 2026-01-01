@@ -2,145 +2,102 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Ionvex Energy Solutions | Smart Lithium Batteries</title>
+  <title>Ionvex Energy Solutions | Smart Lithium Battery Systems</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Ionvex Energy Solutions – Advanced lithium battery systems with smart warranty, dealer network and QR based tracking." />
-  <meta name="keywords" content="Ionvex Battery, Lithium Battery, EV Battery, Warranty Check, Smart Battery India" />
+  <meta name="description" content="Ionvex Energy Solutions – Advanced lithium battery systems with smart warranty, dealer network and customer tracking." />
+  <meta name="keywords" content="Ionvex, lithium battery, EV battery, smart warranty, energy solutions" />
 
   <!-- GLOBAL CSS -->
-  <link rel="stylesheet" href="../css/main.css" />
-  <link rel="stylesheet" href="../css/auth.css" />
+  <link rel="stylesheet" href="/css/main.css" />
 
-  <!-- ICONS -->
-  <link rel="icon" href="../assets/images/logo.png" />
+  <!-- FAVICON -->
+  <link rel="icon" href="/assets/images/logo.png" />
 
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
-<header class="main-header">
-  <div class="logo">
-    <img src="../assets/images/logo.png" alt="Ionvex Energy Solutions" />
-  </div>
+  <!-- ================= HEADER ================= -->
+  <header class="main-header">
+    <div class="logo">
+      <img src="/assets/images/logo.png" alt="Ionvex Energy Solutions" />
+      <span>Ionvex Energy</span>
+    </div>
 
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="products.html">Products</a>
-    <a href="warranty.html">Warranty</a>
-    <a href="login.html">Login</a>
-  </nav>
+    <nav class="main-nav">
+      <a href="/public/index.html">Home</a>
+      <a href="/public/products.html">Products</a>
+      <a href="/public/warranty.html">Warranty Check</a>
+      <a href="/public/login.html">Login</a>
+    </nav>
+  </header>
 
-  <div class="cta-btn">
-    <a href="dealer-register.html" class="btn-primary">Become Dealer</a>
-  </div>
-</header>
-
-<!-- ================= HERO SECTION ================= -->
-<section class="hero">
-  <div class="hero-content">
-    <h1>Powering the Future with Smart Lithium Batteries</h1>
-    <p>
-      High-performance EV batteries with intelligent warranty, QR tracking
-      and nationwide dealer support.
-    </p>
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <h1>Powering the Future with Smart Lithium Energy</h1>
+    <p>Advanced batteries with digital warranty, dealer network & customer tracking.</p>
 
     <div class="hero-actions">
-      <a href="products.html" class="btn-primary">Explore Products</a>
-      <a href="#warrantyCheck" class="btn-outline">Check Warranty</a>
+      <a href="/public/products.html" class="btn-primary">View Products</a>
+      <a href="/public/warranty.html" class="btn-secondary">Check Warranty</a>
     </div>
-  </div>
+  </section>
 
-  <div class="hero-image">
-    <img src="../assets/images/banners/hero-battery.png" alt="Ionvex Battery" />
-  </div>
-</section>
-
-<!-- ================= WARRANTY QUICK CHECK ================= -->
-<section class="warranty-check" id="warrantyCheck">
-  <h2>Quick Warranty Check</h2>
-  <p>Enter Battery Serial Number or Scan QR</p>
-
-  <div class="warranty-form">
-    <input
-      type="text"
-      id="serialInput"
-      placeholder="Enter Battery Serial Number"
-    />
-    <button onclick="checkWarranty()">Check Status</button>
-  </div>
-
-  <div id="warrantyResult" class="warranty-result"></div>
-</section>
-
-<!-- ================= PRODUCT HIGHLIGHTS ================= -->
-<section class="highlights">
-  <h2>Why Ionvex?</h2>
-
-  <div class="highlight-grid">
-    <div class="highlight-card">
-      <h3>🔋 High Energy Density</h3>
-      <p>Longer range with compact and lightweight design.</p>
+  <!-- ================= FEATURES ================= -->
+  <section class="features">
+    <div class="feature-card">
+      <h3>Smart Warranty</h3>
+      <p>QR based warranty activation & real-time status tracking.</p>
     </div>
 
-    <div class="highlight-card">
-      <h3>🛡 Smart Warranty</h3>
-      <p>QR-based warranty activation and fraud protection.</p>
+    <div class="feature-card">
+      <h3>Dealer Network</h3>
+      <p>Verified dealers with approval & performance monitoring.</p>
     </div>
 
-    <div class="highlight-card">
-      <h3>🌍 Pan-India Dealers</h3>
-      <p>Strong dealer network for fast service and support.</p>
+    <div class="feature-card">
+      <h3>Secure System</h3>
+      <p>Firebase powered secure authentication & data protection.</p>
     </div>
 
-    <div class="highlight-card">
-      <h3>📊 Battery Analytics</h3>
-      <p>Future-ready AI based health & performance monitoring.</p>
+    <div class="feature-card">
+      <h3>Analytics Ready</h3>
+      <p>Battery health, claims & lifecycle analytics.</p>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ================= FOOTER ================= -->
-<footer class="main-footer">
-  <p>© 2026 Ionvex Energy Solutions. All Rights Reserved.</p>
+  <!-- ================= WARRANTY QUICK CHECK ================= -->
+  <section class="quick-warranty">
+    <h2>Quick Warranty Check</h2>
 
-  <div class="footer-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">Terms</a>
-    <a href="#">Support</a>
-  </div>
-</footer>
+    <form id="quickWarrantyForm">
+      <input
+        type="text"
+        id="serialInput"
+        placeholder="Enter Battery Serial Number"
+        required
+      />
+      <button type="submit">Check</button>
+    </form>
 
-<!-- ================= JS ================= -->
+    <div id="warrantyResult"></div>
+  </section>
 
-<!-- Firebase core already exists (DO NOT REPEAT app.js) -->
-<script type="module" src="../js/firebase/auth.js"></script>
+  <!-- ================= FOOTER ================= -->
+  <footer class="main-footer">
+    <p>© <span id="year"></span> Ionvex Energy Solutions. All rights reserved.</p>
+  </footer>
 
-<!-- Page logic -->
-<script>
-  // ================= WARRANTY QUICK CHECK =================
-  function checkWarranty() {
-    const serial = document.getElementById("serialInput").value.trim();
-    const resultBox = document.getElementById("warrantyResult");
+  <!-- ================= JS ================= -->
+  <script type="module">
+    import { quickWarrantyCheck } from "/js/home/warrantyQuickCheck.js";
 
-    if (!serial) {
-      resultBox.innerHTML = "<span class='error'>Please enter serial number</span>";
-      return;
-    }
+    document.getElementById("year").textContent = new Date().getFullYear();
 
-    // Placeholder – actual logic via Firestore
-    resultBox.innerHTML = "<span class='loading'>Checking warranty...</span>";
-
-    setTimeout(() => {
-      resultBox.innerHTML = `
-        <div class="success">
-          <strong>Status:</strong> Active <br />
-          <strong>Valid Till:</strong> 12-Aug-2028
-        </div>
-      `;
-    }, 1200);
-  }
-</script>
+    document
+      .getElementById("quickWarrantyForm")
+      .addEventListener("submit", quickWarrantyCheck);
+  </script>
 
 </body>
 </html>
