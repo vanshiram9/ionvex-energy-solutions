@@ -1,24 +1,120 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login | Ionvex</title>
-  <link rel="stylesheet" href="/css/auth.css">
-  <script type="module" src="/js/firebase/app.js"></script>
+  <meta charset="UTF-8" />
+  <title>Login | Ionvex Energy Solutions</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Dealer and Admin login portal - Ionvex Energy Solutions" />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="../css/main.css" />
+  <link rel="stylesheet" href="../css/auth.css" />
+
+  <link rel="icon" href="../assets/images/logo.png" />
 </head>
 <body>
 
-<h2>Dealer / Admin Login</h2>
+<!-- ================= HEADER ================= -->
+<header class="main-header">
+  <div class="logo">
+    <img src="../assets/images/logo.png" alt="Ionvex Energy Solutions" />
+  </div>
 
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="products.html">Products</a>
+    <a href="warranty.html">Warranty</a>
+  </nav>
+</header>
 
-<button id="loginBtn">Login</button>
+<!-- ================= LOGIN BOX ================= -->
+<main class="auth-container">
 
-<p>
-  Want to become dealer?
-  <a href="/dealer-register.html">Apply Here</a>
-</p>
+  <div class="auth-card">
 
-<script type="module" src="/js/firebase/auth.js"></script>
+    <h1>Login</h1>
+    <p class="auth-sub">Dealer / Admin Access</p>
+
+    <form id="loginForm">
+
+      <label>Email</label>
+      <input type="email" id="email" required placeholder="Enter email" />
+
+      <label>Password</label>
+      <input type="password" id="password" required placeholder="Enter password" />
+
+      <button type="submit" class="btn-primary">Login</button>
+
+    </form>
+
+    <p class="auth-links">
+      New Dealer?
+      <a href="dealer-register.html">Apply for Dealership</a>
+    </p>
+
+    <p id="errorMsg" class="error-text"></p>
+
+  </div>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="main-footer">
+  <p>© 2026 Ionvex Energy Solutions</p>
+</footer>
+
+<!-- ================= HYBRID LOGIN JS ================= -->
+<script type="module">
+  import { auth } from "../js/firebase/app.js";
+  import { signInWithEmailAndPassword } from
+    "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  import {
+    getFirestore,
+    doc,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const db = getFirestore();
+
+  const form = document.getElementById("loginForm");
+  const errorMsg = document.getElementById("errorMsg");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorMsg.innerText = "";
+
+    const email = email.value;
+    const password = password.value;
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const uid = cred.user.uid;
+
+      // 🔐 FETCH ROLE
+      const snap = await getDoc(doc(db, "users", uid));
+
+      if (!snap.exists()) {
+        throw new Error("User role not found");
+      }
+
+      const role = snap.data().role;
+
+      // 🚦 ROLE BASED REDIRECT
+      if (role === "ADMIN") {
+        window.location.href = "admin/dashboard/dashboard.html";
+      } else if (role === "DEALER") {
+        window.location.href = "dealer/dashboard.html";
+      } else {
+        throw new Error("Access denied");
+      }
+
+    } catch (err) {
+      errorMsg.innerText = err.message;
+    }
+  });
+</script>
+
 </body>
 </html>
