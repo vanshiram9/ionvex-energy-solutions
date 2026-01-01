@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Our Products | Ionvex Energy Solutions</title>
+  <title>Products | Ionvex Energy Solutions</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Explore Ionvex lithium battery products for 2W, 3W, EV and energy storage solutions." />
+  <meta name="description" content="Explore Ionvex lithium battery solutions for 2W, 3W & 4W electric vehicles." />
 
   <!-- GLOBAL CSS -->
   <link rel="stylesheet" href="../css/main.css" />
@@ -30,107 +30,111 @@
 </header>
 
 <!-- ================= PAGE TITLE ================= -->
-<section class="page-hero">
+<section class="page-header">
   <h1>Our Battery Products</h1>
-  <p>Smart lithium battery solutions designed for performance, safety & long life</p>
+  <p>Advanced lithium battery solutions for every electric vehicle segment</p>
 </section>
 
-<!-- ================= FILTERS ================= -->
-<section class="product-filters">
-  <select id="vehicleType" onchange="filterProducts()">
-    <option value="all">All Vehicles</option>
-    <option value="2w">2 Wheeler</option>
-    <option value="3w">3 Wheeler</option>
-    <option value="4w">4 Wheeler</option>
-    <option value="ess">Energy Storage</option>
-  </select>
-
-  <select id="capacity" onchange="filterProducts()">
-    <option value="all">All Capacities</option>
-    <option value="60">Up to 60Ah</option>
-    <option value="100">60–100Ah</option>
-    <option value="150">100Ah+</option>
-  </select>
+<!-- ================= FILTER BAR ================= -->
+<section class="filter-bar">
+  <button data-filter="ALL" class="filter-btn active">All</button>
+  <button data-filter="2W" class="filter-btn">2 Wheeler</button>
+  <button data-filter="3W" class="filter-btn">3 Wheeler</button>
+  <button data-filter="4W" class="filter-btn">4 Wheeler</button>
 </section>
 
-<!-- ================= PRODUCT GRID ================= -->
-<section class="products-grid" id="productsGrid">
-
-  <!-- PRODUCT CARD -->
-  <div class="product-card" data-type="2w" data-capacity="60">
-    <img src="../assets/images/batteries/2w/battery-60ah.png" alt="2W Battery 60Ah" />
-    <h3>Ionvex 2W – 60Ah</h3>
-    <p>Lightweight lithium battery for electric scooters.</p>
-
-    <ul>
-      <li>🔋 60Ah Capacity</li>
-      <li>⚡ Fast Charging</li>
-      <li>🛡 3 Years Warranty</li>
-    </ul>
-
-    <a href="product-detail.html?id=2w60" class="btn-primary">View Details</a>
-  </div>
-
-  <div class="product-card" data-type="3w" data-capacity="100">
-    <img src="../assets/images/batteries/3w/battery-100ah.png" alt="3W Battery 100Ah" />
-    <h3>Ionvex 3W – 100Ah</h3>
-    <p>High durability battery for electric rickshaws.</p>
-
-    <ul>
-      <li>🔋 100Ah Capacity</li>
-      <li>🌡 Thermal Protection</li>
-      <li>🛡 4 Years Warranty</li>
-    </ul>
-
-    <a href="product-detail.html?id=3w100" class="btn-primary">View Details</a>
-  </div>
-
-  <div class="product-card" data-type="4w" data-capacity="150">
-    <img src="../assets/images/batteries/4w/battery-150ah.png" alt="4W Battery 150Ah" />
-    <h3>Ionvex EV – 150Ah</h3>
-    <p>Advanced battery pack for electric cars.</p>
-
-    <ul>
-      <li>🔋 150Ah Capacity</li>
-      <li>📊 Smart BMS</li>
-      <li>🛡 5 Years Warranty</li>
-    </ul>
-
-    <a href="product-detail.html?id=4w150" class="btn-primary">View Details</a>
-  </div>
-
-</section>
-
-<!-- ================= CTA ================= -->
-<section class="dealer-cta">
-  <h2>Want to Sell Ionvex Batteries?</h2>
-  <p>Join our growing dealer network across India.</p>
-  <a href="dealer-register.html" class="btn-primary">Register as Dealer</a>
-</section>
+<!-- ================= PRODUCTS GRID ================= -->
+<main class="products-container" id="productsContainer">
+  <!-- Products injected by JS -->
+</main>
 
 <!-- ================= FOOTER ================= -->
 <footer class="main-footer">
   <p>© 2026 Ionvex Energy Solutions. All Rights Reserved.</p>
 </footer>
 
-<!-- ================= JS ================= -->
+<!-- ================= JS (HYBRID) ================= -->
 <script>
-  function filterProducts() {
-    const type = document.getElementById("vehicleType").value;
-    const capacity = document.getElementById("capacity").value;
-
-    document.querySelectorAll(".product-card").forEach(card => {
-      const matchType = type === "all" || card.dataset.type === type;
-      const matchCap =
-        capacity === "all" ||
-        (capacity === "60" && card.dataset.capacity <= 60) ||
-        (capacity === "100" && card.dataset.capacity > 60 && card.dataset.capacity <= 100) ||
-        (capacity === "150" && card.dataset.capacity > 100);
-
-      card.style.display = matchType && matchCap ? "block" : "none";
-    });
+/**
+ * TEMP PRODUCT DATA
+ * Later connect with Firestore (admin-controlled)
+ */
+const PRODUCTS = [
+  {
+    id: "P-2W-60",
+    category: "2W",
+    name: "Ionvex 2W 60Ah",
+    voltage: "48V",
+    range: "90 km",
+    warranty: "3 Years",
+    image: "../assets/images/batteries/2w/48v-60ah.png"
+  },
+  {
+    id: "P-2W-100",
+    category: "2W",
+    name: "Ionvex 2W 100Ah",
+    voltage: "48V",
+    range: "130 km",
+    warranty: "3 Years",
+    image: "../assets/images/batteries/2w/48v-100ah.png"
+  },
+  {
+    id: "P-3W-120",
+    category: "3W",
+    name: "Ionvex 3W 120Ah",
+    voltage: "48V",
+    range: "160 km",
+    warranty: "4 Years",
+    image: "../assets/images/batteries/3w/48v-120ah.png"
+  },
+  {
+    id: "P-4W-200",
+    category: "4W",
+    name: "Ionvex 4W 200Ah",
+    voltage: "72V",
+    range: "300 km",
+    warranty: "5 Years",
+    image: "../assets/images/batteries/4w/72v-200ah.png"
   }
-</script>
+];
 
-</body>
-      </html>
+const container = document.getElementById("productsContainer");
+const filterBtns = document.querySelectorAll(".filter-btn");
+
+function renderProducts(filter = "ALL") {
+  container.innerHTML = "";
+
+  const filtered = filter === "ALL"
+    ? PRODUCTS
+    : PRODUCTS.filter(p => p.category === filter);
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<p class="empty">No products found.</p>`;
+    return;
+  }
+
+  filtered.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "product-card";
+
+    card.innerHTML = `
+      <img src="${p.image}" alt="${p.name}" />
+      <h3>${p.name}</h3>
+      <p><strong>Voltage:</strong> ${p.voltage}</p>
+      <p><strong>Range:</strong> ${p.range}</p>
+      <p><strong>Warranty:</strong> ${p.warranty}</p>
+      <a href="product-detail.html?id=${p.id}" class="btn-secondary">
+        View Details
+      </a>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+// FILTER HANDLING
+filterBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelector(".filter-btn.active").classList.remove("active");
+    btn.classList.add("active");
+    renderProducts
