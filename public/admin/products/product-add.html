@@ -5,40 +5,46 @@
   <title>Add Product | Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Global CSS -->
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/public/admin/layout/layout.css">
-  <link rel="stylesheet" href="/public/admin/admin.css">
 </head>
 <body>
 
-<!-- 🔐 AUTH GUARD -->
+<!-- AUTH -->
 <script type="module" src="/public/admin/auth/auth-guard.js"></script>
 
-<!-- HEADER + SIDEBAR -->
 <div id="header"></div>
 <div id="sidebar"></div>
 
-<!-- ================= MAIN ================= -->
 <main class="admin-main">
 
   <h1>Add New Product</h1>
 
-  <form id="productForm" class="admin-form">
+  <form id="productForm" class="form-card">
 
-    <div class="form-group">
-      <label>Product Name</label>
-      <input type="text" id="productName" required>
-    </div>
+    <label>Product Name</label>
+    <input type="text" id="name" required>
 
-    <div class="form-group">
-      <label>Product Category</label>
-      <select id="productCategory" required>
-        <option value="">Select Category</option>
-      </select>
-    </div>
+    <label>Category</label>
+    <select id="category">
+      <option value="2W">2 Wheeler</option>
+      <option value="3W">3 Wheeler</option>
+      <option value="4W">4 Wheeler</option>
+    </select>
 
-    <div class="form-group">
-      <label>Battery Type</label>
-      <select id="batteryType" required>
-        <option value="Lith
+    <label>Description</label>
+    <textarea id="description"></textarea>
+
+    <label>Status</label>
+    <select id="status">
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+    </select>
+
+    <label>Show on Home</label>
+    <input type="checkbox" id="showOnHome">
+
+    <label>Featured Product</label>
+    <input type="checkbox" id="featured">
+
+    <label>Product Images
