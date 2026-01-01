@@ -5,7 +5,6 @@
   <title>Claim Status | Ionvex Energy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS -->
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/customer.css" />
 </head>
@@ -19,15 +18,15 @@
 <main class="customer-main">
 
   <section class="card">
-    <h3>Enter Battery Serial</h3>
+    <h3>Track Your Claim</h3>
 
     <div class="inline-form">
-      <input id="serialInput" placeholder="Battery Serial Number" />
-      <button id="checkBtn" class="btn primary">Check</button>
+      <input id="claimInput" placeholder="Enter Claim ID or Battery Serial" />
+      <button id="trackBtn" class="btn primary">Track</button>
     </div>
   </section>
 
-  <section id="claimsSection" class="claims-section"></section>
+  <section id="result" class="claim-result"></section>
 
 </main>
 
@@ -43,57 +42,57 @@
     collection,
     query,
     where,
-    orderBy,
-    getDocs
+    getDocs,
+    orderBy
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
   document.getElementById("year").innerText = new Date().getFullYear();
 
-  const claimsSection = document.getElementById("claimsSection");
+  const result = document.getElementById("result");
 
-  document.getElementById("checkBtn").addEventListener("click", async () => {
-    const serial = document.getElementById("serialInput").value.trim();
-
-    if (!serial) {
-      alert("Enter serial number");
+  document.getElementById("trackBtn").addEventListener("click", async () => {
+    const key = document.getElementById("claimInput").value.trim();
+    if (!key) {
+      alert("Enter Claim ID or Battery Serial");
       return;
     }
 
-    claimsSection.innerHTML = "Loading...";
+    result.innerHTML = "Searching claim...";
 
     const q = query(
       collection(db, "claims"),
-      where("serial", "==", serial),
+      where("searchKeys", "array-contains", key),
       orderBy("createdAt", "desc")
     );
 
     const snap = await getDocs(q);
 
     if (snap.empty) {
-      claimsSection.innerHTML = "<p>No claims found.</p>";
+      result.innerHTML = "<p>No claim found.</p>";
       return;
     }
 
-    let html = "";
+    const c = snap.docs[0].data();
 
-    snap.forEach(doc => {
-      const c = doc.data();
+    result.innerHTML = `
+      <div class="claim-card status-${c.status}">
+        <h3>Claim Details</h3>
 
-      html += `
-        <div class="claim-card status-${c.status}">
-          <h4>${c.problemType}</h4>
-          <p><b>Status:</b> ${c.status}</p>
-          <p><b>Date:</b> ${c.createdAt?.toDate().toLocaleDateString()}</p>
-          <p>${c.description}</p>
+        <p><b>Claim ID:</b> ${c.claimId}</p>
+        <p><b>Battery Serial:</b> ${c.serial}</p>
+        <p><b>Status:</b> ${c.status}</p>
+        <p><b>Submitted On:</b> ${c.createdAt?.toDate().toLocaleDateString()}</p>
 
-          ${c.imageUrl ? `<img src="${c.imageUrl}" class="claim-img" />` : ""}
+        <hr>
 
-          ${c.adminRemark ? `<p class="remark">Admin: ${c.adminRemark}</p>` : ""}
-        </div>
-      `;
-    });
+        <p><b>Admin Remarks:</b></p>
+        <p class="remarks">${c.remarks || "Pending review"}</p>
 
-    claimsSection.innerHTML = html;
+        <span class="badge ${c.status}">
+          ${c.status}
+        </span>
+      </div>
+    `;
   });
 </script>
 
