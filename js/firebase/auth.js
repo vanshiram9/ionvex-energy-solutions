@@ -1,25 +1,45 @@
 // js/firebase/auth.js
-// 🔐 LOCKED FILE — DO NOT MODIFY
+// 🔐 FINAL LOCKED FILE — PRODUCTION READY
 
 import { auth } from "./app.js";
 
 import {
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+/* ================================
+   AUTH PERSISTENCE
+   (Vercel + Browser safe)
+================================ */
+setPersistence(auth, browserLocalPersistence);
 
 /* ================================
    LOGIN
 ================================ */
 export async function loginUser(email, password) {
   try {
+    if (!email || !password) {
+      throw new Error("Email and password are required");
+    }
+
     const cred = await signInWithEmailAndPassword(
       auth,
       email,
       password
     );
-    return cred.user;
+
+    const user = cred.user;
+
+    if (!user) {
+      throw new Error("Authentication failed");
+    }
+
+    return user;
+
   } catch (error) {
     throw formatAuthError(error);
   }
@@ -29,17 +49,20 @@ export async function loginUser(email, password) {
    LOGOUT
 ================================ */
 export async function logoutUser() {
-  await signOut(auth);
-  window.location.href = "/login.html";
+  try {
+    await signOut(auth);
+  } finally {
+    window.location.href = "/login.html";
+  }
 }
 
 /* ================================
-   AUTH WATCHER
-   (Guards ke liye)
+   AUTH STATE WATCHER
+   (Route guards ke liye)
 ================================ */
 export function watchAuth(callback) {
   return onAuthStateChanged(auth, user => {
-    callback(user);
+    callback(user || null);
   });
 }
 
@@ -63,7 +86,7 @@ function formatAuthError(error) {
       msg = "Account disabled";
       break;
     case "auth/too-many-requests":
-      msg = "Too many attempts. Try later";
+      msg = "Too many attempts. Try again later";
       break;
   }
 
