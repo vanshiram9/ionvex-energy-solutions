@@ -2,90 +2,134 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Battery Status | Ionvex Energy</title>
+  <title>My Battery | Ionvex Energy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Global + Customer CSS -->
+  <!-- CSS -->
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/customer.css" />
 
   <style>
-    .battery-card {
-      max-width: 900px;
-      margin: 40px auto;
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+    .card {
       background: #fff;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 22px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.08);
     }
-    .battery-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    h2 { margin-top: 0; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap: 16px;
     }
-    .status-active { color: green; font-weight: bold; }
-    .status-expired { color: red; font-weight: bold; }
+    .box {
+      padding: 14px;
+      border-radius: 10px;
+      background: #f8f9fa;
+      font-size: 14px;
+    }
+    .health {
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .good { color: #1e7e34; }
+    .warn { color: #e0a800; }
+    .bad { color: #a71d2a; }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      font-size: 14px;
     }
     th, td {
       padding: 10px;
       border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #f1f1f1;
       text-align: left;
     }
-    .qr-box {
-      margin-top: 20px;
-      text-align: center;
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      background: #1976d2;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn.secondary {
+      background: #6c757d;
     }
   </style>
 </head>
 <body>
 
 <header class="public-header">
-  <h1>Ionvex Energy Solutions</h1>
+  <h1>My Battery</h1>
 </header>
 
-<main class="battery-card">
-
-  <div class="battery-header">
-    <h2>Battery Status</h2>
-    <span id="warrantyStatus" class="status-active">Checking...</span>
-  </div>
+<main class="container">
 
   <!-- BASIC INFO -->
-  <table>
-    <tr>
-      <th>Battery Serial No</th>
-      <td id="serialNo">—</td>
-    </tr>
-    <tr>
-      <th>Model</th>
-      <td id="model">—</td>
-    </tr>
-    <tr>
-      <th>Capacity</th>
-      <td id="capacity">—</td>
-    </tr>
-    <tr>
-      <th>Dealer</th>
-      <td id="dealer">—</td>
-    </tr>
-    <tr>
-      <th>Activation Date</th>
-      <td id="activationDate">—</td>
-    </tr>
-    <tr>
-      <th>Warranty Expiry</th>
-      <td id="expiryDate">—</td>
-    </tr>
-  </table>
+  <div class="card">
+    <h2>Battery Overview</h2>
+    <div class="grid">
+      <div class="box"><strong>Serial:</strong> <span id="serial"></span></div>
+      <div class="box"><strong>Model:</strong> <span id="model"></span></div>
+      <div class="box"><strong>Capacity:</strong> <span id="capacity"></span></div>
+      <div class="box"><strong>Vehicle:</strong> <span id="vehicle"></span></div>
+      <div class="box"><strong>Dealer:</strong> <span id="dealer"></span></div>
+      <div class="box"><strong>Activated On:</strong> <span id="activated"></span></div>
+    </div>
+  </div>
 
-  <!-- QR CODE -->
-  <div class="qr-box">
-    <h3>Battery QR</h3>
-    <canvas id="qrCanvas"></canvas>
+  <!-- BATTERY HEALTH -->
+  <div class="card">
+    <h2>Battery Health</h2>
+    <p class="health" id="healthText">—</p>
+    <p id="healthNote"></p>
+  </div>
+
+  <!-- USAGE STATS -->
+  <div class="card">
+    <h2>Usage Summary</h2>
+    <div class="grid">
+      <div class="box"><strong>Charge Cycles:</strong> <span id="cycles"></span></div>
+      <div class="box"><strong>Avg. Depth of Discharge:</strong> <span id="dod"></span></div>
+      <div class="box"><strong>Last Service:</strong> <span id="lastService"></span></div>
+      <div class="box"><strong>BMS Status:</strong> <span id="bms"></span></div>
+    </div>
+  </div>
+
+  <!-- SERVICE HISTORY -->
+  <div class="card">
+    <h2>Service / Claim History</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody id="historyTable">
+        <tr><td colspan="4">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="card">
+    <h2>Actions</h2>
+    <button class="btn" id="warrantyBtn">View Warranty</button>
+    <button class="btn secondary" onclick="history.back()">Back</button>
   </div>
 
 </main>
@@ -97,57 +141,88 @@
 <!-- JS -->
 <script type="module">
   import { db } from "/js/firebase/app.js";
-  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-  import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
+  import {
+    doc, getDoc, collection, getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // 🔎 Get serial from URL
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const serial = params.get("serial");
 
   if (!serial) {
     alert("Battery serial missing");
-    throw new Error("Serial missing");
+    throw new Error("No serial");
   }
 
-  document.getElementById("serialNo").innerText = serial;
-
-  // 🔥 Fetch battery
+  // Battery
   const ref = doc(db, "batteries", serial);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
     alert("Battery not found");
-    throw new Error("Battery not found");
+    throw new Error("Invalid serial");
   }
 
-  const data = snap.data();
+  const d = snap.data();
 
-  document.getElementById("model").innerText = data.model || "-";
-  document.getElementById("capacity").innerText = data.capacity || "-";
-  document.getElementById("dealer").innerText = data.dealerName || "-";
-  document.getElementById("activationDate").innerText = data.activationDate || "-";
-  document.getElementById("expiryDate").innerText = data.expiryDate || "-";
+  document.getElementById("serial").innerText = serial;
+  document.getElementById("model").innerText = d.model || "-";
+  document.getElementById("capacity").innerText = d.capacity || "-";
+  document.getElementById("vehicle").innerText = d.vehicleType || "-";
+  document.getElementById("dealer").innerText = d.dealerName || "-";
+  document.getElementById("activated").innerText = d.activationDate || "-";
 
-  // ✅ Warranty status
-  const today = new Date();
-  const expiry = new Date(data.expiryDate);
+  // Health logic (industry-style simplified)
+  const cycles = d.chargeCycles || 0;
+  let health = "GOOD";
+  let note = "Battery is operating within optimal parameters.";
 
-  const statusEl = document.getElementById("warrantyStatus");
-  if (expiry >= today) {
-    statusEl.innerText = "Warranty Active";
-    statusEl.className = "status-active";
-  } else {
-    statusEl.innerText = "Warranty Expired";
-    statusEl.className = "status-expired";
+  if (cycles > 1200) {
+    health = "CRITICAL";
+    note = "Battery nearing end-of-life. Replacement recommended.";
+  } else if (cycles > 800) {
+    health = "WARNING";
+    note = "Battery aging detected. Monitor usage closely.";
   }
 
-  // 🔲 QR Code
-  QRCode.toCanvas(
-    document.getElementById("qrCanvas"),
-    window.location.href,
-    { width: 180 }
+  const healthEl = document.getElementById("healthText");
+  healthEl.innerText = health;
+  healthEl.classList.add(
+    health === "GOOD" ? "good" : health === "WARNING" ? "warn" : "bad"
   );
+  document.getElementById("healthNote").innerText = note;
+
+  // Usage
+  document.getElementById("cycles").innerText = cycles;
+  document.getElementById("dod").innerText = d.avgDOD ? d.avgDOD + "%" : "-";
+  document.getElementById("lastService").innerText = d.lastService || "—";
+  document.getElementById("bms").innerText = d.bmsStatus || "OK";
+
+  // History
+  const historyRef = collection(db, "batteries", serial, "history");
+  const histSnap = await getDocs(historyRef);
+  const tbody = document.getElementById("historyTable");
+  tbody.innerHTML = "";
+
+  if (histSnap.empty) {
+    tbody.innerHTML = "<tr><td colspan='4'>No records found</td></tr>";
+  } else {
+    histSnap.forEach(docu => {
+      const h = docu.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${h.date || "-"}</td>
+          <td>${h.type || "-"}</td>
+          <td>${h.status || "-"}</td>
+          <td>${h.remarks || "-"}</td>
+        </tr>`;
+    });
+  }
+
+  // Warranty link
+  document.getElementById("warrantyBtn").onclick = () => {
+    location.href = `/public/customer/warranty.html?serial=${serial}`;
+  };
 </script>
 
 </body>
-</html>
+  </html>
