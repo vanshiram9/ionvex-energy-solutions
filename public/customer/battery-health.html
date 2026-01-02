@@ -5,7 +5,6 @@
   <title>Battery Health | Ionvex Energy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS -->
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/customer.css" />
 </head>
@@ -13,21 +12,20 @@
 
 <header class="customer-header">
   <img src="/assets/images/logo.png" class="logo" />
-  <h2>Battery Health & Warranty</h2>
+  <h2>Battery Health & Lifecycle</h2>
 </header>
 
 <main class="customer-main">
 
   <section class="card">
     <h3>Check Battery Health</h3>
-
     <div class="inline-form">
-      <input id="serialInput" placeholder="Battery Serial Number" />
+      <input id="serialInput" placeholder="Enter Battery Serial Number" />
       <button id="checkBtn" class="btn primary">Check</button>
     </div>
   </section>
 
-  <section id="result" class="health-section"></section>
+  <section id="healthResult" class="health-result"></section>
 
 </main>
 
@@ -38,10 +36,7 @@
 <!-- ================= JS ================= -->
 <script type="module">
   import { db } from "/js/firebase/firestore.js";
-
   import {
-    doc,
-    getDoc,
     collection,
     query,
     where,
@@ -50,55 +45,79 @@
 
   document.getElementById("year").innerText = new Date().getFullYear();
 
-  const result = document.getElementById("result");
+  const result = document.getElementById("healthResult");
+
+  function calcHealthScore(battery) {
+    // Simple industry-style heuristic (read-only preview)
+    let score = 100;
+    score -= Math.min(battery.chargeCycles || 0, 1000) * 0.03;
+    score -= battery.temperatureAlerts ? 10 : 0;
+    score -= battery.deepDischargeEvents ? 5 : 0;
+    return Math.max(Math.round(score), 30);
+  }
+
+  function warrantyRemaining(expiry) {
+    const now = new Date();
+    const end = expiry.toDate();
+    const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 0;
+  }
 
   document.getElementById("checkBtn").addEventListener("click", async () => {
     const serial = document.getElementById("serialInput").value.trim();
-
     if (!serial) {
-      alert("Enter serial number");
+      alert("Enter Battery Serial Number");
       return;
     }
 
-    result.innerHTML = "Loading...";
+    result.innerHTML = "Analyzing battery health...";
 
-    const ref = doc(db, "batteries", serial);
-    const snap = await getDoc(ref);
+    const q = query(
+      collection(db, "batteries"),
+      where("serial", "==", serial)
+    );
 
-    if (!snap.exists()) {
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
       result.innerHTML = "<p>Battery not found.</p>";
       return;
     }
 
-    const b = snap.data();
-    const today = new Date();
-    const expiry = b.warrantyExpiry?.toDate();
-    const remaining = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-
-    // 🔍 Claim count
-    const cq = query(
-      collection(db, "claims"),
-      where("serial", "==", serial)
-    );
-    const csnap = await getDocs(cq);
+    const b = snap.docs[0].data();
+    const health = calcHealthScore(b);
+    const remaining = warrantyRemaining(b.warrantyExpiry);
 
     result.innerHTML = `
-      <div class="health-card status-${b.status}">
-        <h3>Battery Summary</h3>
+      <div class="health-card">
+        <h3>Battery Overview</h3>
 
-        <p><b>Status:</b> ${b.status}</p>
-        <p><b>Vehicle:</b> ${b.vehicleType}</p>
-        <p><b>Activated:</b> ${b.activatedAt?.toDate().toLocaleDateString()}</p>
-        <p><b>Warranty Expiry:</b> ${expiry.toLocaleDateString()}</p>
-        <p><b>Remaining Days:</b> ${remaining > 0 ? remaining : 0}</p>
+        <p><b>Serial:</b> ${b.serial}</p>
+        <p><b>Model:</b> ${b.model}</p>
+        <p><b>Manufacture Date:</b> ${b.manufactureDate?.toDate().toLocaleDateString()}</p>
 
         <hr>
 
-        <p><b>Total Claims:</b> ${csnap.size}</p>
+        <p><b>Health Score:</b></p>
+        <div class="health-bar">
+          <div class="health-fill" style="width:${health}%"></div>
+        </div>
+        <p class="health-score">${health} / 100</p>
 
-        <span class="badge ${remaining > 0 ? "valid" : "expired"}">
-          ${remaining > 0 ? "Warranty Valid" : "Warranty Expired"}
-        </span>
+        <p><b>Charge Cycles:</b> ${b.chargeCycles || "N/A"}</p>
+        <p><b>Warranty Remaining:</b> ${remaining} days</p>
+
+        <div class="alert ${
+          health > 80 ? "good" : health > 60 ? "warn" : "danger"
+        }">
+          ${
+            health > 80
+              ? "Battery health is excellent."
+              : health > 60
+              ? "Battery health is moderate. Monitor usage."
+              : "Battery health is low. Service recommended."
+          }
+        </div>
       </div>
     `;
   });
