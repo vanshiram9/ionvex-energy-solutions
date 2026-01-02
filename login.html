@@ -13,74 +13,102 @@
 </head>
 <body>
 
-  <!-- ================= HEADER ================= -->
-  <header class="main-header">
-    <div class="logo">
-      <img src="/assets/images/logo.png" alt="Ionvex Energy" />
-      <span>Ionvex Energy</span>
+<!-- ================= HEADER ================= -->
+<header class="main-header">
+  <div class="logo">
+    <img src="/assets/images/logo.png" alt="Ionvex Energy" />
+    <span>Ionvex Energy</span>
+  </div>
+
+  <nav class="main-nav">
+    <a href="/index.html">Home</a>
+    <a href="/products.html">Products</a>
+    <a href="/warranty.html">Warranty</a>
+    <a href="/login.html" class="active">Login</a>
+  </nav>
+</header>
+
+<!-- ================= LOGIN ================= -->
+<section class="auth-container">
+
+  <h1>Login</h1>
+  <p>Admin / Dealer / Customer</p>
+
+  <div class="auth-box">
+
+    <input
+      type="email"
+      id="email"
+      placeholder="Email address"
+      autocomplete="email"
+    />
+
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    />
+
+    <button id="loginBtn" class="btn-primary">
+      Login
+    </button>
+
+    <div id="loginError" class="error-box hidden"></div>
+
+    <div class="auth-links">
+      <a href="/dealer-register.html">New Dealer? Request Registration</a>
     </div>
 
-    <nav class="main-nav">
-      <a href="/index.html">Home</a>
-      <a href="/products.html">Products</a>
-      <a href="/warranty.html">Warranty</a>
-      <a href="/login.html" class="active">Login</a>
-    </nav>
-  </header>
+  </div>
 
-  <!-- ================= LOGIN ================= -->
-  <section class="auth-container">
+</section>
 
-    <h1>Login</h1>
-    <p>Dealer / Admin access only</p>
+<!-- ================= FOOTER ================= -->
+<footer class="main-footer">
+  <p>© <span id="year"></span> Ionvex Energy Solutions. All rights reserved.</p>
+</footer>
 
-    <form class="auth-box" id="loginForm">
+<!-- ================= JS ================= -->
+<script type="module">
+  import { loginUser } from "/js/firebase/auth.js";
+  import { redirectByRole } from "/js/firebase/role.js";
 
-      <input
-        type="email"
-        id="email"
-        placeholder="Email address"
-        autocomplete="email"
-        required
-      />
+  document.getElementById("year").textContent = new Date().getFullYear();
 
-      <input
-        type="password"
-        id="password"
-        placeholder="Password"
-        autocomplete="current-password"
-        required
-      />
+  const loginBtn = document.getElementById("loginBtn");
+  const errorBox = document.getElementById("loginError");
 
-      <button type="submit" class="btn-primary">
-        Login
-      </button>
+  loginBtn.addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
 
-      <div id="loginError" class="error-box hidden"></div>
+    errorBox.classList.add("hidden");
+    errorBox.textContent = "";
 
-      <div class="auth-links">
-        <a href="/dealer-register.html">
-          New Dealer? Request Registration
-        </a>
-      </div>
+    if (!email || !password) {
+      errorBox.textContent = "Email and password are required";
+      errorBox.classList.remove("hidden");
+      return;
+    }
 
-    </form>
+    loginBtn.disabled = true;
+    loginBtn.innerText = "Logging in...";
 
-  </section>
-
-  <!-- ================= FOOTER ================= -->
-  <footer class="main-footer">
-    <p>© <span id="year"></span> Ionvex Energy Solutions. All rights reserved.</p>
-  </footer>
-
-  <!-- ================= JS ================= -->
-  <!-- 🔐 Firebase Auth Handler -->
-  <script type="module" src="/js/firebase/auth.js"></script>
-
-  <script>
-    document.getElementById("year").textContent =
-      new Date().getFullYear();
-  </script>
+    try {
+      const user = await loginUser(email, password);
+      await redirectByRole(user.uid);
+    } catch (err) {
+      errorBox.textContent =
+        err.code === "auth/invalid-credential"
+          ? "Invalid email or password"
+          : err.message || "Login failed";
+      errorBox.classList.remove("hidden");
+      loginBtn.disabled = false;
+      loginBtn.innerText = "Login";
+    }
+  });
+</script>
 
 </body>
 </html>
