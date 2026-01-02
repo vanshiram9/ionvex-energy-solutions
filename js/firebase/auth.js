@@ -1,43 +1,71 @@
+// js/firebase/auth.js
+// 🔐 LOCKED FILE — DO NOT MODIFY
+
 import { auth } from "./app.js";
+
 import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-import { handleRoleRedirect } from "./role.js";
+/* ================================
+   LOGIN
+================================ */
+export async function loginUser(email, password) {
+  try {
+    const cred = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+    return cred.user;
+  } catch (error) {
+    throw formatAuthError(error);
+  }
+}
 
-/* LOGIN */
-const loginForm = document.getElementById("loginForm");
+/* ================================
+   LOGOUT
+================================ */
+export async function logoutUser() {
+  await signOut(auth);
+  window.location.href = "/login.html";
+}
 
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
-
-    try {
-      const cred = await signInWithEmailAndPassword(auth, email, password);
-      await handleRoleRedirect(cred.user.uid);
-    } catch (err) {
-      alert("Login failed: " + err.message);
-    }
+/* ================================
+   AUTH WATCHER
+   (Guards ke liye)
+================================ */
+export function watchAuth(callback) {
+  return onAuthStateChanged(auth, user => {
+    callback(user);
   });
 }
 
-/* LOGOUT */
-window.logoutUser = async function () {
-  await signOut(auth);
-  location.href = "/login.html";
-};
+/* ================================
+   ERROR FORMATTER
+================================ */
+function formatAuthError(error) {
+  let msg = "Authentication failed";
 
-/* AUTO LOGIN CHECK */
-onAuthStateChanged(auth, (user) => {
-  if (!user) return;
-
-  const onLoginPage = location.pathname.endsWith("login.html");
-  if (onLoginPage) {
-    handleRoleRedirect(user.uid);
+  switch (error.code) {
+    case "auth/user-not-found":
+      msg = "Account not found";
+      break;
+    case "auth/wrong-password":
+      msg = "Incorrect password";
+      break;
+    case "auth/invalid-email":
+      msg = "Invalid email address";
+      break;
+    case "auth/user-disabled":
+      msg = "Account disabled";
+      break;
+    case "auth/too-many-requests":
+      msg = "Too many attempts. Try later";
+      break;
   }
-});
+
+  return new Error(msg);
+}
