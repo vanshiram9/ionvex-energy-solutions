@@ -5,76 +5,122 @@
   <title>Customer Dashboard | Ionvex Energy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS -->
+  <!-- Global + Customer CSS -->
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/customer.css" />
+
+  <style>
+    .dash-wrap {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+      gap: 16px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      color: #555;
+    }
+    .card span {
+      font-size: 26px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 24px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+    th {
+      background: #f5f7fa;
+      font-weight: 600;
+    }
+    .status-active { color:#1e7e34; font-weight:600; }
+    .status-expired { color:#a71d2a; font-weight:600; }
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      background:#1976d2;
+      color:#fff;
+    }
+  </style>
 </head>
 <body>
 
-<header class="customer-header">
-  <img src="/assets/images/logo.png" class="logo" alt="Ionvex Energy" />
-  <h2>Customer Dashboard</h2>
+<header class="public-header">
+  <h1>Ionvex Energy – Customer Dashboard</h1>
 </header>
 
-<main class="customer-main">
+<main class="dash-wrap">
 
   <!-- SUMMARY CARDS -->
-  <section class="dashboard-cards">
-
+  <section class="cards">
     <div class="card">
       <h3>Total Batteries</h3>
       <span id="totalBatteries">0</span>
     </div>
-
     <div class="card">
-      <h3>Active Warranty</h3>
-      <span id="activeWarranty">0</span>
+      <h3>Active Warranties</h3>
+      <span id="activeWarranties">0</span>
     </div>
-
     <div class="card">
-      <h3>Pending Claims</h3>
-      <span id="pendingClaims">0</span>
+      <h3>Expired Warranties</h3>
+      <span id="expiredWarranties">0</span>
     </div>
-
     <div class="card">
-      <h3>Warranty Expiring</h3>
-      <span id="expiringSoon">0</span>
+      <h3>Warranty Claims</h3>
+      <span id="claimsCount">0</span>
     </div>
-
   </section>
 
-  <!-- RECENT BATTERIES -->
-  <section class="card">
-    <h3>My Batteries</h3>
-    <table class="table">
+  <!-- BATTERY LIST -->
+  <section>
+    <h2 style="margin-top:30px;">My Batteries</h2>
+
+    <table>
       <thead>
         <tr>
           <th>Serial</th>
           <th>Model</th>
-          <th>Warranty</th>
           <th>Status</th>
+          <th>Expiry</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody id="batteryTable"></tbody>
     </table>
   </section>
 
-  <!-- QUICK ACTIONS -->
-  <section class="quick-actions">
-    <a href="/public/customer/warranty.html" class="btn">View Warranty</a>
-    <a href="/public/customer/track-claim.html" class="btn secondary">Track Claim</a>
-  </section>
-
 </main>
 
-<footer class="customer-footer">
-  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+<footer class="public-footer">
+  <p>© Ionvex Energy Solutions</p>
 </footer>
 
-<!-- ================= JS ================= -->
+<!-- JS -->
 <script type="module">
-  import { auth } from "/js/firebase/auth.js";
-  import { db } from "/js/firebase/firestore.js";
+  import { db } from "/js/firebase/app.js";
   import {
     collection,
     query,
@@ -82,69 +128,66 @@
     getDocs
   } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  document.getElementById("year").innerText = new Date().getFullYear();
+  // NOTE:
+  // In real production this will be linked with
+  // authenticated customer UID / mobile number
+  const CUSTOMER_MOBILE = localStorage.getItem("customerMobile");
 
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-      window.location.href = "/public/login.html";
-      return;
-    }
+  if (!CUSTOMER_MOBILE) {
+    alert("Customer session not found");
+    throw new Error("No customer context");
+  }
 
-    loadDashboard(user.uid);
+  const q = query(
+    collection(db, "batteries"),
+    where("customerMobile", "==", CUSTOMER_MOBILE)
+  );
+
+  const snap = await getDocs(q);
+
+  let total = 0;
+  let active = 0;
+  let expired = 0;
+
+  const tbody = document.getElementById("batteryTable");
+
+  snap.forEach(docu => {
+    total++;
+    const d = docu.data();
+
+    const expiry = new Date(d.expiryDate);
+    const today = new Date();
+    const isActive = today <= expiry;
+
+    if (isActive) active++;
+    else expired++;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${docu.id}</td>
+      <td>${d.model || "-"}</td>
+      <td class="${isActive ? "status-active" : "status-expired"}">
+        ${isActive ? "Active" : "Expired"}
+      </td>
+      <td>${d.expiryDate}</td>
+      <td>
+        <button class="btn"
+          onclick="location.href='/public/customer/warranty.html?serial=${docu.id}'">
+          View
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
   });
 
-  async function loadDashboard(uid) {
-    /* ---------- BATTERIES ---------- */
-    const batQ = query(
-      collection(db, "batteries"),
-      where("customerId", "==", uid)
-    );
-    const batSnap = await getDocs(batQ);
+  document.getElementById("totalBatteries").innerText = total;
+  document.getElementById("activeWarranties").innerText = active;
+  document.getElementById("expiredWarranties").innerText = expired;
 
-    document.getElementById("totalBatteries").innerText = batSnap.size;
-
-    let active = 0;
-    let expiring = 0;
-    const today = new Date();
-
-    const table = document.getElementById("batteryTable");
-    table.innerHTML = "";
-
-    batSnap.forEach(doc => {
-      const b = doc.data();
-
-      if (b.warrantyStatus === "ACTIVE") active++;
-
-      if (b.warrantyEnd) {
-        const end = b.warrantyEnd.toDate();
-        const diff = (end - today) / (1000 * 60 * 60 * 24);
-        if (diff < 30 && diff > 0) expiring++;
-      }
-
-      table.innerHTML += `
-        <tr>
-          <td>${b.serial}</td>
-          <td>${b.model || "-"}</td>
-          <td>${b.warrantyStatus}</td>
-          <td>${b.status}</td>
-        </tr>
-      `;
-    });
-
-    document.getElementById("activeWarranty").innerText = active;
-    document.getElementById("expiringSoon").innerText = expiring;
-
-    /* ---------- CLAIMS ---------- */
-    const claimQ = query(
-      collection(db, "claims"),
-      where("customerId", "==", uid),
-      where("status", "==", "pending")
-    );
-
-    const claimSnap = await getDocs(claimQ);
-    document.getElementById("pendingClaims").innerText = claimSnap.size;
-  }
+  // Claims count (simple placeholder – linked later with claims collection)
+  document.getElementById("claimsCount").innerText =
+    localStorage.getItem("customerClaimsCount") || 0;
 </script>
 
 </body>
-</html>
+      </html>
