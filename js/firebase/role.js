@@ -1,35 +1,55 @@
+// js/firebase/role.js
+// 🔐 LOCKED FILE — DO NOT MODIFY
+
 import { db } from "./app.js";
+
 import {
   doc,
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-export async function handleRoleRedirect(uid) {
+/* ================================
+   ROLE BASED REDIRECT
+================================ */
+export async function redirectByRole(uid) {
   try {
+    // user profile document
     const ref = doc(db, "users", uid);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      alert("No role assigned. Contact admin.");
-      return;
+      throw new Error("User profile not found");
     }
 
-    const role = snap.data().role;
+    const data = snap.data();
+    const role = data.role;
 
-    if (role === "admin") {
-      location.href = "/admin/dashboard/dashboard.html";
-    } 
-    else if (role === "dealer") {
-      location.href = "/dealer/dashboard.html";
-    } 
-    else if (role === "customer") {
-      location.href = "/customer/dashboard.html";
-    } 
-    else {
-      alert("Invalid role");
+    if (!role) {
+      throw new Error("User role missing");
+    }
+
+    /* ================================
+       ROLE ROUTING
+    ================================ */
+    switch (role) {
+      case "admin":
+        window.location.href = "/admin/dashboard/dashboard.html";
+        break;
+
+      case "dealer":
+        window.location.href = "/dealer/dashboard.html";
+        break;
+
+      case "customer":
+        window.location.href = "/customer/dashboard.html";
+        break;
+
+      default:
+        throw new Error("Invalid user role");
     }
 
   } catch (err) {
-    alert("Role fetch error: " + err.message);
+    console.error("Role redirect error:", err.message);
+    alert(err.message);
   }
 }
