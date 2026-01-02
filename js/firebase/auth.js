@@ -1,35 +1,43 @@
-// js/firebase/auth.js
-
+import { auth } from "./app.js";
 import {
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-import { auth } from "./app.js";
+import { handleRoleRedirect } from "./role.js";
 
-/**
- * LOGIN
- */
-export async function loginUser(email, password) {
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    return cred.user;
-  } catch (error) {
-    console.error("Auth error:", error.code);
+/* LOGIN */
+const loginForm = document.getElementById("loginForm");
 
-    let msg = "Login failed";
-    if (error.code === "auth/user-not-found") msg = "User not found";
-    if (error.code === "auth/wrong-password") msg = "Wrong password";
-    if (error.code === "auth/invalid-email") msg = "Invalid email";
+if (loginForm) {
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    throw new Error(msg);
-  }
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      await handleRoleRedirect(cred.user.uid);
+    } catch (err) {
+      alert("Login failed: " + err.message);
+    }
+  });
 }
 
-/**
- * LOGOUT
- */
-export async function logoutUser() {
+/* LOGOUT */
+window.logoutUser = async function () {
   await signOut(auth);
   location.href = "/login.html";
-}
+};
+
+/* AUTO LOGIN CHECK */
+onAuthStateChanged(auth, (user) => {
+  if (!user) return;
+
+  const onLoginPage = location.pathname.endsWith("login.html");
+  if (onLoginPage) {
+    handleRoleRedirect(user.uid);
+  }
+});
