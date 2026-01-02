@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Warranty Details | Ionvex Energy</title>
+  <title>Battery Warranty | Ionvex Energy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Global + Customer CSS -->
@@ -10,116 +10,95 @@
   <link rel="stylesheet" href="/css/customer.css" />
 
   <style>
-    .warranty-box {
+    .wrap {
       max-width: 900px;
-      margin: 40px auto;
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      margin: 30px auto;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.1);
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .item {
+      font-size: 15px;
+    }
+    .item strong {
+      color: #555;
     }
     .status {
-      font-weight: bold;
-      padding: 6px 12px;
-      border-radius: 20px;
-      display: inline-block;
+      font-weight: 700;
+      font-size: 18px;
     }
-    .active { background:#e8f7ee; color:#1e7e34; }
-    .expired { background:#fdecea; color:#a71d2a; }
-    .progress {
-      height: 10px;
-      background: #eee;
-      border-radius: 6px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-    .progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg,#28a745,#6fda44);
-      width: 0%;
-      transition: width .4s ease;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-    .actions {
-      margin-top: 20px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+    .active { color: #1e7e34; }
+    .expired { color: #a71d2a; }
     .btn {
       padding: 10px 16px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: none;
       cursor: pointer;
       font-weight: 600;
+      background: #1976d2;
+      color: #fff;
+      margin-right: 10px;
     }
-    .btn-claim { background:#ff9800; color:#fff; }
-    .btn-download { background:#1976d2; color:#fff; }
+    .btn.secondary {
+      background: #6c757d;
+    }
   </style>
 </head>
 <body>
 
 <header class="public-header">
-  <h1>Ionvex Energy Solutions</h1>
+  <h1>Battery Warranty Details</h1>
 </header>
 
-<main class="warranty-box">
-  <h2>Warranty Information</h2>
+<main class="wrap">
 
-  <div>
-    <span id="warrantyStatus" class="status">Checking...</span>
+  <!-- BATTERY INFO -->
+  <div class="card">
+    <h2>Battery Information</h2>
+
+    <div class="row">
+      <div class="item"><strong>Serial:</strong> <span id="serial"></span></div>
+      <div class="item"><strong>Model:</strong> <span id="model"></span></div>
+      <div class="item"><strong>Capacity:</strong> <span id="capacity"></span></div>
+      <div class="item"><strong>Vehicle Type:</strong> <span id="vehicle"></span></div>
+      <div class="item"><strong>Dealer:</strong> <span id="dealer"></span></div>
+      <div class="item"><strong>Activated On:</strong> <span id="activatedOn"></span></div>
+    </div>
   </div>
 
-  <!-- WARRANTY TABLE -->
-  <table>
-    <tr>
-      <th>Battery Serial</th>
-      <td id="serial">—</td>
-    </tr>
-    <tr>
-      <th>Product Model</th>
-      <td id="model">—</td>
-    </tr>
-    <tr>
-      <th>Warranty Period</th>
-      <td id="period">—</td>
-    </tr>
-    <tr>
-      <th>Activation Date</th>
-      <td id="activation">—</td>
-    </tr>
-    <tr>
-      <th>Expiry Date</th>
-      <td id="expiry">—</td>
-    </tr>
-    <tr>
-      <th>Remaining Days</th>
-      <td id="remaining">—</td>
-    </tr>
-  </table>
+  <!-- WARRANTY STATUS -->
+  <div class="card">
+    <h2>Warranty Status</h2>
+    <p class="status" id="statusText">—</p>
 
-  <!-- WARRANTY PROGRESS -->
-  <div>
-    <label>Warranty Usage</label>
-    <div class="progress">
-      <div class="progress-bar" id="progressBar"></div>
+    <div class="row">
+      <div class="item"><strong>Warranty Start:</strong> <span id="startDate"></span></div>
+      <div class="item"><strong>Warranty Expiry:</strong> <span id="expiryDate"></span></div>
+      <div class="item"><strong>Warranty Type:</strong> <span id="warrantyType"></span></div>
+      <div class="item"><strong>Remaining Days:</strong> <span id="remainingDays"></span></div>
     </div>
   </div>
 
   <!-- ACTIONS -->
-  <div class="actions">
-    <button class="btn btn-claim" id="claimBtn">Request Warranty Claim</button>
-    <button class="btn btn-download" id="downloadBtn">Download Warranty PDF</button>
+  <div class="card">
+    <h2>Actions</h2>
+    <button class="btn" id="claimBtn">Raise Warranty Claim</button>
+    <button class="btn secondary" onclick="history.back()">Back</button>
   </div>
+
 </main>
 
 <footer class="public-footer">
@@ -129,62 +108,64 @@
 <!-- JS -->
 <script type="module">
   import { db } from "/js/firebase/app.js";
-  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import {
+    doc,
+    getDoc
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const serial = params.get("serial");
 
   if (!serial) {
     alert("Battery serial missing");
-    throw new Error("Serial missing");
+    throw new Error("No serial");
   }
-
-  document.getElementById("serial").innerText = serial;
 
   const ref = doc(db, "batteries", serial);
   const snap = await getDoc(ref);
 
   if (!snap.exists()) {
-    alert("Warranty data not found");
-    throw new Error("Not found");
+    alert("Battery not found");
+    throw new Error("Invalid serial");
   }
 
   const d = snap.data();
 
+  // Fill basic info
+  document.getElementById("serial").innerText = serial;
   document.getElementById("model").innerText = d.model || "-";
-  document.getElementById("period").innerText = d.warrantyMonths + " Months";
-  document.getElementById("activation").innerText = d.activationDate;
-  document.getElementById("expiry").innerText = d.expiryDate;
+  document.getElementById("capacity").innerText = d.capacity || "-";
+  document.getElementById("vehicle").innerText = d.vehicleType || "-";
+  document.getElementById("dealer").innerText = d.dealerName || "-";
+  document.getElementById("activatedOn").innerText = d.activationDate || "-";
 
+  // Warranty logic
   const start = new Date(d.activationDate);
-  const end = new Date(d.expiryDate);
+  const expiry = new Date(d.expiryDate);
   const today = new Date();
 
-  const totalDays = Math.ceil((end - start) / 86400000);
-  const usedDays = Math.max(0, Math.ceil((today - start) / 86400000));
-  const remaining = Math.max(0, totalDays - usedDays);
+  const isActive = today <= expiry;
+  const diffDays = Math.max(
+    0,
+    Math.ceil((expiry - today) / (1000 * 60 * 60 * 24))
+  );
 
-  document.getElementById("remaining").innerText = remaining + " days";
+  document.getElementById("startDate").innerText = d.activationDate;
+  document.getElementById("expiryDate").innerText = d.expiryDate;
+  document.getElementById("warrantyType").innerText = d.warrantyType || "Standard";
+  document.getElementById("remainingDays").innerText = diffDays;
 
-  const percent = Math.min(100, Math.round((usedDays / totalDays) * 100));
-  document.getElementById("progressBar").style.width = percent + "%";
+  const statusText = document.getElementById("statusText");
+  statusText.innerText = isActive ? "Warranty Active" : "Warranty Expired";
+  statusText.classList.add(isActive ? "active" : "expired");
 
-  const statusEl = document.getElementById("warrantyStatus");
-  if (today <= end) {
-    statusEl.innerText = "Warranty Active";
-    statusEl.className = "status active";
-  } else {
-    statusEl.innerText = "Warranty Expired";
-    statusEl.className = "status expired";
-  }
-
-  // 🔁 Actions
+  // Claim button
   document.getElementById("claimBtn").onclick = () => {
-    window.location.href = "/public/dealer/claims.html?serial=" + serial;
-  };
-
-  document.getElementById("downloadBtn").onclick = () => {
-    alert("PDF generator will be linked with Cloud Functions");
+    if (!isActive) {
+      alert("Warranty expired. Claim not allowed.");
+      return;
+    }
+    location.href = `/public/dealer/claims.html?serial=${serial}&from=customer`;
   };
 </script>
 
