@@ -1,21 +1,15 @@
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "./firestore.js";
+import { db } from "./app.js";
+import { doc, getDoc } from
+  "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 export async function redirectByRole(uid) {
-  const ref = doc(db, "users", uid);
-  const snap = await getDoc(ref);
+  const snap = await getDoc(doc(db, "users", uid));
 
   if (!snap.exists()) throw new Error("User role not found");
 
   const role = snap.data().role;
 
-  if (role === "admin") {
-    window.location.href = "/public/admin/dashboard/dashboard.html";
-  } 
-  else if (role === "dealer") {
-    window.location.href = "/public/dealer/dashboard.html";
-  } 
-  else {
-    throw new Error("Unauthorized role");
-  }
+  if (role === "admin") location.href = "/admin/dashboard.html";
+  else if (role === "dealer") location.href = "/dealer/dashboard.html";
+  else throw new Error("Unauthorized role");
 }
