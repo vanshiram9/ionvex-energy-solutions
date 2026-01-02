@@ -21,10 +21,10 @@
     </div>
 
     <nav class="main-nav">
-      <a href="/public/index.html">Home</a>
-      <a href="/public/products.html">Products</a>
-      <a href="/public/warranty.html">Warranty</a>
-      <a href="/public/login.html" class="active">Login</a>
+      <a href="/index.html">Home</a>
+      <a href="/products.html">Products</a>
+      <a href="/warranty.html">Warranty</a>
+      <a href="/login.html" class="active">Login</a>
     </nav>
   </header>
 
@@ -34,13 +34,14 @@
     <h1>Login</h1>
     <p>Dealer / Admin access only</p>
 
-    <div class="auth-box">
+    <form class="auth-box" id="loginForm">
 
       <input
         type="email"
         id="email"
         placeholder="Email address"
         autocomplete="email"
+        required
       />
 
       <input
@@ -48,21 +49,22 @@
         id="password"
         placeholder="Password"
         autocomplete="current-password"
+        required
       />
 
-      <button id="loginBtn" class="btn-primary">
+      <button type="submit" class="btn-primary">
         Login
       </button>
 
       <div id="loginError" class="error-box hidden"></div>
 
       <div class="auth-links">
-        <a href="/public/dealer-register.html">
+        <a href="/dealer-register.html">
           New Dealer? Request Registration
         </a>
       </div>
 
-    </div>
+    </form>
 
   </section>
 
@@ -72,35 +74,12 @@
   </footer>
 
   <!-- ================= JS ================= -->
-  <script type="module">
-    import { loginUser } from "/js/firebase/auth.js";
-    import { redirectByRole } from "/js/firebase/role.js";
+  <!-- 🔐 Firebase Auth Handler -->
+  <script type="module" src="/js/firebase/auth.js"></script>
 
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    const loginBtn = document.getElementById("loginBtn");
-    const errorBox = document.getElementById("loginError");
-
-    loginBtn.addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-
-      errorBox.classList.add("hidden");
-
-      if (!email || !password) {
-        errorBox.textContent = "Email and password are required";
-        errorBox.classList.remove("hidden");
-        return;
-      }
-
-      try {
-        const user = await loginUser(email, password);
-        await redirectByRole(user.uid);
-      } catch (err) {
-        errorBox.textContent = err.message || "Login failed";
-        errorBox.classList.remove("hidden");
-      }
-    });
+  <script>
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
   </script>
 
 </body>
