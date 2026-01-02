@@ -5,116 +5,148 @@
   <title>Battery Status | Ionvex Energy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS -->
+  <!-- Global + Customer CSS -->
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/customer.css" />
+
+  <style>
+    .battery-card {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    .battery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-active { color: green; font-weight: bold; }
+    .status-expired { color: red; font-weight: bold; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    .qr-box {
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
 
-<header class="customer-header">
-  <img src="/assets/images/logo.png" class="logo" alt="Ionvex Energy" />
-  <h2>Battery Details</h2>
+<header class="public-header">
+  <h1>Ionvex Energy Solutions</h1>
 </header>
 
-<main class="customer-main">
+<main class="battery-card">
 
-  <section class="card" id="batteryCard">
-    <h3>Battery Information</h3>
+  <div class="battery-header">
+    <h2>Battery Status</h2>
+    <span id="warrantyStatus" class="status-active">Checking...</span>
+  </div>
 
-    <div class="info-row"><span>Serial Number:</span><strong id="serial"></strong></div>
-    <div class="info-row"><span>Model:</span><strong id="model"></strong></div>
-    <div class="info-row"><span>Capacity:</span><strong id="capacity"></strong></div>
-    <div class="info-row"><span>Vehicle Type:</span><strong id="vehicle"></strong></div>
+  <!-- BASIC INFO -->
+  <table>
+    <tr>
+      <th>Battery Serial No</th>
+      <td id="serialNo">—</td>
+    </tr>
+    <tr>
+      <th>Model</th>
+      <td id="model">—</td>
+    </tr>
+    <tr>
+      <th>Capacity</th>
+      <td id="capacity">—</td>
+    </tr>
+    <tr>
+      <th>Dealer</th>
+      <td id="dealer">—</td>
+    </tr>
+    <tr>
+      <th>Activation Date</th>
+      <td id="activationDate">—</td>
+    </tr>
+    <tr>
+      <th>Warranty Expiry</th>
+      <td id="expiryDate">—</td>
+    </tr>
+  </table>
 
-    <hr/>
-
-    <div class="info-row"><span>Warranty Status:</span><strong id="warrantyStatus"></strong></div>
-    <div class="info-row"><span>Warranty Expiry:</span><strong id="expiry"></strong></div>
-
-    <div class="health-box">
-      <h4>Battery Health</h4>
-      <div class="health-bar">
-        <div class="health-fill" id="healthFill"></div>
-      </div>
-      <p id="healthText"></p>
-    </div>
-
-    <button id="claimBtn" class="danger-btn">Raise Warranty Claim</button>
-  </section>
+  <!-- QR CODE -->
+  <div class="qr-box">
+    <h3>Battery QR</h3>
+    <canvas id="qrCanvas"></canvas>
+  </div>
 
 </main>
 
-<footer class="customer-footer">
-  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+<footer class="public-footer">
+  <p>© Ionvex Energy Solutions</p>
 </footer>
 
-<!-- ================= JS ================= -->
+<!-- JS -->
 <script type="module">
-  import { db } from "/js/firebase/firestore.js";
-  import {
-    collection,
-    query,
-    where,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { db } from "/js/firebase/app.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm";
 
-  document.getElementById("year").innerText = new Date().getFullYear();
-
+  // 🔎 Get serial from URL
   const params = new URLSearchParams(window.location.search);
-  const serialParam = params.get("serial");
+  const serial = params.get("serial");
 
-  if (!serialParam) {
-    alert("Invalid access");
-    window.location.href = "/public/customer/index.html";
+  if (!serial) {
+    alert("Battery serial missing");
+    throw new Error("Serial missing");
   }
 
-  async function loadBattery() {
-    const q = query(
-      collection(db, "batteries"),
-      where("serial", "==", serialParam)
-    );
+  document.getElementById("serialNo").innerText = serial;
 
-    const snap = await getDocs(q);
+  // 🔥 Fetch battery
+  const ref = doc(db, "batteries", serial);
+  const snap = await getDoc(ref);
 
-    if (snap.empty) {
-      alert("Battery record not found");
-      return;
-    }
-
-    const data = snap.docs[0].data();
-
-    document.getElementById("serial").innerText = data.serial;
-    document.getElementById("model").innerText = data.model || "-";
-    document.getElementById("capacity").innerText = data.capacity || "-";
-    document.getElementById("vehicle").innerText = data.vehicleType || "-";
-
-    const today = new Date();
-    const expiry = data.warrantyExpiry?.toDate();
-
-    document.getElementById("expiry").innerText =
-      expiry ? expiry.toDateString() : "N/A";
-
-    const isActive = expiry && expiry >= today;
-    document.getElementById("warrantyStatus").innerText =
-      isActive ? "ACTIVE ✅" : "EXPIRED ❌";
-
-    const health = data.healthPercent || 80;
-    document.getElementById("healthFill").style.width = health + "%";
-    document.getElementById("healthText").innerText =
-      health + "% health remaining";
-
-    if (!isActive) {
-      document.getElementById("claimBtn").disabled = true;
-      document.getElementById("claimBtn").innerText = "Warranty Expired";
-    }
+  if (!snap.exists()) {
+    alert("Battery not found");
+    throw new Error("Battery not found");
   }
 
-  document.getElementById("claimBtn").addEventListener("click", () => {
-    window.location.href =
-      `/public/customer/raise-claim.html?serial=${serialParam}`;
-  });
+  const data = snap.data();
 
-  loadBattery();
+  document.getElementById("model").innerText = data.model || "-";
+  document.getElementById("capacity").innerText = data.capacity || "-";
+  document.getElementById("dealer").innerText = data.dealerName || "-";
+  document.getElementById("activationDate").innerText = data.activationDate || "-";
+  document.getElementById("expiryDate").innerText = data.expiryDate || "-";
+
+  // ✅ Warranty status
+  const today = new Date();
+  const expiry = new Date(data.expiryDate);
+
+  const statusEl = document.getElementById("warrantyStatus");
+  if (expiry >= today) {
+    statusEl.innerText = "Warranty Active";
+    statusEl.className = "status-active";
+  } else {
+    statusEl.innerText = "Warranty Expired";
+    statusEl.className = "status-expired";
+  }
+
+  // 🔲 QR Code
+  QRCode.toCanvas(
+    document.getElementById("qrCanvas"),
+    window.location.href,
+    { width: 180 }
+  );
 </script>
 
 </body>
