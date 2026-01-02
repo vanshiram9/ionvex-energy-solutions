@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Owner Dashboard | Ionvex Energy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="./dashboard.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>📊 Owner KPI Dashboard</h1>
+  <button id="logoutBtn">Logout</button>
+</header>
+
+<section class="kpi-grid">
+  <div class="kpi-card">
+    <h3>Total Batteries</h3>
+    <p id="kpiBatteries">--</p>
+  </div>
+
+  <div class="kpi-card">
+    <h3>Active Warranties</h3>
+    <p id="kpiWarranties">--</p>
+  </div>
+
+  <div class="kpi-card">
+    <h3>Total Claims</h3>
+    <p id="kpiClaims">--</p>
+  </div>
+
+  <div class="kpi-card">
+    <h3>Risk Index</h3>
+    <p id="kpiRisk">--</p>
+  </div>
+</section>
+
+<section class="charts">
+  <div class="chart-box">
+    <h3>Monthly Sales</h3>
+    <canvas id="salesChart"></canvas>
+  </div>
+
+  <div class="chart-box">
+    <h3>Claims Trend</h3>
+    <canvas id="claimsChart"></canvas>
+  </div>
+</section>
+
+<script type="module" src="./dashboard.js"></script>
+</body>
+</html>
