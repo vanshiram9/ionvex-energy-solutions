@@ -1,5 +1,5 @@
 // js/firebase/role.js
-// 🔐 LOCKED FILE — DO NOT MODIFY
+// 🔐 FINAL LOCKED FILE — PRODUCTION READY
 
 import { db } from "./app.js";
 
@@ -9,11 +9,24 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 /* ================================
+   CENTRAL ROUTE MAP
+================================ */
+const ROUTES = {
+  admin: "/admin/dashboard/dashboard.html",
+  dealer: "/dealer/dashboard.html",
+  customer: "/customer/dashboard.html",
+  login: "/login.html"
+};
+
+/* ================================
    ROLE BASED REDIRECT
 ================================ */
 export async function redirectByRole(uid) {
   try {
-    // user profile document
+    if (!uid) {
+      throw new Error("Invalid user session");
+    }
+
     const ref = doc(db, "users", uid);
     const snap = await getDoc(ref);
 
@@ -22,34 +35,43 @@ export async function redirectByRole(uid) {
     }
 
     const data = snap.data();
-    const role = data.role;
 
+    const role = data.role;
+    const approved = data.approved ?? true;
+    const status = data.status ?? "active";
+
+    /* ================================
+       SECURITY CHECKS
+    ================================ */
     if (!role) {
       throw new Error("User role missing");
+    }
+
+    if (!approved) {
+      throw new Error("Account not approved yet");
+    }
+
+    if (status !== "active") {
+      throw new Error("Account is inactive");
     }
 
     /* ================================
        ROLE ROUTING
     ================================ */
-    switch (role) {
-      case "admin":
-        window.location.href = "/admin/dashboard/dashboard.html";
-        break;
+    const target = ROUTES[role];
 
-      case "dealer":
-        window.location.href = "/dealer/dashboard.html";
-        break;
-
-      case "customer":
-        window.location.href = "/customer/dashboard.html";
-        break;
-
-      default:
-        throw new Error("Invalid user role");
+    if (!target) {
+      throw new Error("Invalid user role");
     }
+
+    window.location.replace(target);
 
   } catch (err) {
     console.error("Role redirect error:", err.message);
+
     alert(err.message);
+
+    // Safety fallback
+    window.location.replace(ROUTES.login);
   }
 }
