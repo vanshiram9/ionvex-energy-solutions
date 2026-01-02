@@ -2,115 +2,190 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Warranty Card | Ionvex Energy</title>
+  <title>Warranty Details | Ionvex Energy</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS -->
+  <!-- Global + Customer CSS -->
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/customer.css" />
+
+  <style>
+    .warranty-box {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    .status {
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .active { background:#e8f7ee; color:#1e7e34; }
+    .expired { background:#fdecea; color:#a71d2a; }
+    .progress {
+      height: 10px;
+      background: #eee;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg,#28a745,#6fda44);
+      width: 0%;
+      transition: width .4s ease;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    .actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-claim { background:#ff9800; color:#fff; }
+    .btn-download { background:#1976d2; color:#fff; }
+  </style>
 </head>
 <body>
 
-<header class="customer-header">
-  <img src="/assets/images/logo.png" class="logo" />
-  <h2>Warranty Card</h2>
+<header class="public-header">
+  <h1>Ionvex Energy Solutions</h1>
 </header>
 
-<main class="customer-main">
+<main class="warranty-box">
+  <h2>Warranty Information</h2>
 
-  <!-- INPUT -->
-  <section class="card">
-    <label for="serialInput"><strong>Battery Serial Number</strong></label>
-    <input id="serialInput" placeholder="Enter Serial Number" />
-    <button id="checkBtn" class="btn primary">Check Warranty</button>
-  </section>
+  <div>
+    <span id="warrantyStatus" class="status">Checking...</span>
+  </div>
 
-  <!-- WARRANTY CARD -->
-  <section id="warrantyCard" class="card hidden">
+  <!-- WARRANTY TABLE -->
+  <table>
+    <tr>
+      <th>Battery Serial</th>
+      <td id="serial">—</td>
+    </tr>
+    <tr>
+      <th>Product Model</th>
+      <td id="model">—</td>
+    </tr>
+    <tr>
+      <th>Warranty Period</th>
+      <td id="period">—</td>
+    </tr>
+    <tr>
+      <th>Activation Date</th>
+      <td id="activation">—</td>
+    </tr>
+    <tr>
+      <th>Expiry Date</th>
+      <td id="expiry">—</td>
+    </tr>
+    <tr>
+      <th>Remaining Days</th>
+      <td id="remaining">—</td>
+    </tr>
+  </table>
 
-    <div class="card-header">
-      <h3>Ionvex Battery Warranty</h3>
-      <span id="statusBadge" class="badge"></span>
+  <!-- WARRANTY PROGRESS -->
+  <div>
+    <label>Warranty Usage</label>
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
     </div>
+  </div>
 
-    <div class="info-grid">
-      <div><strong>Serial No:</strong> <span id="wSerial"></span></div>
-      <div><strong>Model:</strong> <span id="wModel"></span></div>
-      <div><strong>Vehicle Type:</strong> <span id="wVehicle"></span></div>
-      <div><strong>Warranty Start:</strong> <span id="wStart"></span></div>
-      <div><strong>Warranty End:</strong> <span id="wEnd"></span></div>
-      <div><strong>Activated By:</strong> <span id="wDealer"></span></div>
-    </div>
-
-    <div class="actions">
-      <button onclick="window.print()" class="btn secondary">Print</button>
-      <a id="claimLink" class="btn">Raise Claim</a>
-    </div>
-
-  </section>
-
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn btn-claim" id="claimBtn">Request Warranty Claim</button>
+    <button class="btn btn-download" id="downloadBtn">Download Warranty PDF</button>
+  </div>
 </main>
 
-<footer class="customer-footer">
-  <p>© <span id="year"></span> Ionvex Energy Solutions</p>
+<footer class="public-footer">
+  <p>© Ionvex Energy Solutions</p>
 </footer>
 
-<!-- ================= JS ================= -->
+<!-- JS -->
 <script type="module">
-  import { db } from "/js/firebase/firestore.js";
-  import {
-    doc,
-    getDoc
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { db } from "/js/firebase/app.js";
+  import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  document.getElementById("year").innerText = new Date().getFullYear();
+  const params = new URLSearchParams(window.location.search);
+  const serial = params.get("serial");
 
-  const btn = document.getElementById("checkBtn");
+  if (!serial) {
+    alert("Battery serial missing");
+    throw new Error("Serial missing");
+  }
 
-  btn.addEventListener("click", async () => {
-    const serial = document.getElementById("serialInput").value.trim();
-    if (!serial) return alert("Enter serial number");
+  document.getElementById("serial").innerText = serial;
 
-    const ref = doc(db, "batteries", serial);
-    const snap = await getDoc(ref);
+  const ref = doc(db, "batteries", serial);
+  const snap = await getDoc(ref);
 
-    if (!snap.exists()) {
-      alert("Warranty not found");
-      return;
-    }
+  if (!snap.exists()) {
+    alert("Warranty data not found");
+    throw new Error("Not found");
+  }
 
-    const b = snap.data();
+  const d = snap.data();
 
-    document.getElementById("warrantyCard").classList.remove("hidden");
+  document.getElementById("model").innerText = d.model || "-";
+  document.getElementById("period").innerText = d.warrantyMonths + " Months";
+  document.getElementById("activation").innerText = d.activationDate;
+  document.getElementById("expiry").innerText = d.expiryDate;
 
-    document.getElementById("wSerial").innerText = serial;
-    document.getElementById("wModel").innerText = b.model || "-";
-    document.getElementById("wVehicle").innerText = b.vehicleType || "-";
+  const start = new Date(d.activationDate);
+  const end = new Date(d.expiryDate);
+  const today = new Date();
 
-    const start = b.warrantyStart?.toDate();
-    const end = b.warrantyEnd?.toDate();
+  const totalDays = Math.ceil((end - start) / 86400000);
+  const usedDays = Math.max(0, Math.ceil((today - start) / 86400000));
+  const remaining = Math.max(0, totalDays - usedDays);
 
-    document.getElementById("wStart").innerText =
-      start ? start.toDateString() : "-";
-    document.getElementById("wEnd").innerText =
-      end ? end.toDateString() : "-";
+  document.getElementById("remaining").innerText = remaining + " days";
 
-    document.getElementById("wDealer").innerText =
-      b.activatedByName || "Authorized Dealer";
+  const percent = Math.min(100, Math.round((usedDays / totalDays) * 100));
+  document.getElementById("progressBar").style.width = percent + "%";
 
-    const badge = document.getElementById("statusBadge");
+  const statusEl = document.getElementById("warrantyStatus");
+  if (today <= end) {
+    statusEl.innerText = "Warranty Active";
+    statusEl.className = "status active";
+  } else {
+    statusEl.innerText = "Warranty Expired";
+    statusEl.className = "status expired";
+  }
 
-    if (b.status === "ACTIVE") {
-      badge.innerText = "ACTIVE";
-      badge.className = "badge success";
-      document.getElementById("claimLink").href =
-        `/public/customer/raise-claim.html?serial=${serial}`;
-    } else {
-      badge.innerText = "EXPIRED";
-      badge.className = "badge danger";
-      document.getElementById("claimLink").style.display = "none";
-    }
-  });
+  // 🔁 Actions
+  document.getElementById("claimBtn").onclick = () => {
+    window.location.href = "/public/dealer/claims.html?serial=" + serial;
+  };
+
+  document.getElementById("downloadBtn").onclick = () => {
+    alert("PDF generator will be linked with Cloud Functions");
+  };
 </script>
 
 </body>
