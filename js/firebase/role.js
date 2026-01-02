@@ -1,29 +1,37 @@
-import { db } from "./app.js";
+// js/firebase/role.js
+
 import {
-  doc, getDoc, setDoc
+  doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+import { db } from "./app.js";
+
+/**
+ * Firestore structure:
+ * users/{uid}
+ * {
+ *   role: "admin" | "dealer" | "customer"
+ * }
+ */
 export async function redirectByRole(uid) {
   const ref = doc(db, "users", uid);
   const snap = await getDoc(ref);
 
-  if (!snap.exists()) throw new Error("User role not assigned");
+  if (!snap.exists()) {
+    alert("User role not defined");
+    return;
+  }
 
-  const role = snap.data().role;
+  const { role } = snap.data();
 
   if (role === "admin") {
-    location.href = "/public/admin/dashboard.html";
+    location.href = "/admin/dashboard/dashboard.html";
   } else if (role === "dealer") {
-    location.href = "/public/dealer/dashboard.html";
+    location.href = "/dealer/dashboard.html";
+  } else if (role === "customer") {
+    location.href = "/customer/dashboard.html";
   } else {
-    throw new Error("Unauthorized role");
+    alert("Invalid role");
   }
-}
-
-export async function createDealerProfile(uid, data) {
-  await setDoc(doc(db, "users", uid), {
-    role: "dealer",
-    ...data,
-    createdAt: new Date()
-  });
 }
